@@ -1,0 +1,259 @@
+{
+  "subject": "Computer Studies",
+  "paper": "Paper 1",
+  "source": "StudyLite Kenya",
+  "metadata": {
+    "type": "theoretical",
+    "description": "Sample Computer Studies questions.",
+    "level": "KCSE",
+    "last_updated": "2025-10-08"
+  },
+  "questions": [
+{
+"id": 1,
+"title": ":",
+"question": "State the function of the control unit in respect to Coordination",
+"solution": "The control unit coordinates and controls the operations of the CPU and other parts of the computer. It fetches instructions from memory, decodes them, and issues the necessary control signals (timing and sequencing) so that the arithmetic logic unit, registers and I/O devices perform their tasks in the correct order and at the right time.",
+"working_steps": [
+"Fetch instruction from memory.",
+"Decode the instruction to find required actions.",
+"Send control signals to the ALU, registers and I/O to carry out the instruction in the correct sequence."
+]
+},
+{
+"id": 2,
+"title": ":",
+"question": "State the function of the control unit in respect to Flow of data",
+"solution": "With respect to data flow the control unit directs the movement of data between the CPU, memory and I/O devices. It enables correct data paths by activating buses and controlling read/write operations so data goes to the right place at the right time.",
+"working_steps": [
+"Activate appropriate buses (address, data, control).",
+"Control memory read/write cycles and I/O transfers.",
+"Ensure data is routed between registers, ALU and external devices as required by instructions."
+]
+},
+{
+  "id": 3,
+"title": ":",
+"question": "A school intends to acquire a desktop computer. State three factors the school should consider about the computer memory.",
+"solution": "Three important memory factors are: (1) Capacity (size) — amount of RAM to run required applications smoothly (e.g., 8GB, 16GB); (2) Type/speed — the RAM type (e.g., DDR4 vs DDR3) and its clock speed which affects performance; (3) Expandability and secondary storage — whether the motherboard supports adding more RAM and the size/type of permanent storage (SSD/HDD) for storing files and programs.",
+"working_steps": [
+"Choose sufficient RAM capacity for school software and multitasking.",
+"Prefer modern, faster memory types for better performance.",
+"Check if memory can be upgraded later and select suitable persistent storage (SSD recommended)."
+]
+},
+{
+  "id": 4,
+"title": ":",
+"question": "State the difference between Random Access Memory and Read Only Memory with respect to volatility.",
+"solution": "RAM (Random Access Memory) is volatile: it loses its contents when power is switched off. ROM (Read Only Memory) is non-volatile: it retains stored data even when the power is turned off.",
+"working_steps": [
+"RAM stores data temporarily while programs run; power loss clears it.",
+"ROM stores permanent firmware/configuration and remains intact without power."
+]
+},
+{
+  "id": 5,
+"title": ":",
+"question": "State three circumstances that may necessitate formatting of a computer hard disk.",
+"solution": "Three circumstances are: (1) Reinstalling or changing the operating system (to prepare the disk and remove old OS files); (2) Severe file system corruption or multiple unrecoverable errors (formatting restores a clean file system); (3) Removal of persistent malware/viruses or preparing a disk for reuse/sale (to wipe data and start fresh).",
+"working_steps": [
+"When OS reinstallation requires an empty or differently formatted partition.",
+"When disk errors/file system corruption prevent normal use and repair fails.",
+"When securely erasing all user data before disposing or reassigning the disk."
+]
+},
+{
+  "id": 6,
+"title": ":",
+"question": "Arrange the following units of measurement in a computer from the largest to the smallest: (byte, nibble, bit, word)",
+"solution": "From largest to smallest (typical assumption that a word > byte): word, byte, nibble, bit. (A word is machine-dependent — commonly 16 or 32 bits — a byte = 8 bits, a nibble = 4 bits, a bit = 1 bit.)",
+"working_steps": [
+"Identify sizes: word (e.g., 16 or 32 bits) > byte (8 bits) > nibble (4 bits) > bit (1 bit).",
+"Order accordingly: word, byte, nibble, bit."
+]
+},
+{
+  "id": 7,
+"title": ":",
+"question": "Convert 2560 Gigabyte (GB) to Terabyte (TB)",
+"solution": "Assuming 1 TB = 1024 GB (binary/IEC convention), 2560 GB = 2560 ÷ 1024 = 2.5 TB. (If using decimal SI where 1 TB = 1000 GB, then 2560 GB = 2.56 TB.)",
+"working_steps": [
+"Using 1024: 2560 ÷ 1024 = 2.5 TB.",
+"Note alternative: using 1000 gives 2.56 TB."
+]
+},
+{
+  "id": 8,
+"title": ":",
+"question": "A company prefers laser printers over dot matrix printers for its operations. State three technological reasons for the preference.",
+"solution": "Three technological reasons: (1) Higher print quality — laser printers produce sharp, high-resolution text and graphics compared to the coarse dot-matrix output; (2) Faster print speed and lower noise — lasers print many pages per minute quietly, improving office efficiency; (3) Lower running costs for high-volume printing and better support for modern features (networking, duplexing, high-resolution graphics).",
+"working_steps": [
+"Laser printers use toner and fusing technology for crisp output.",
+"They print faster and more quietly than impact dot-matrix mechanisms.",
+"They offer advanced features and are more economical for large print volumes."
+]
+},
+{
+  "id": 9,
+"title": ":",
+"question": "State two possible actions that a user may take when a computer's operating system becomes unresponsive to commands.",
+"solution": "Two possible actions: (1) Try to open Task Manager (e.g., Ctrl+Alt+Del) and end the unresponsive application or process; (2) If that fails, perform a controlled restart — first attempt a soft reboot (restart from OS or use power button short press), or boot into Safe Mode to diagnose and repair the problem.",
+"working_steps": [
+"Use Task Manager to end tasks or free system resources.",
+"Restart and, if necessary, boot to Safe Mode to uninstall problematic software or restore the system."
+]
+},
+{
+  "id": 10,
+"title": ":",
+"question": "Explain each of the following factors in reference to integrity in data processing: (a) timeliness; (b) relevance.",
+"solution": "(a) Timeliness: Data integrity requires that data be available and up-to-date when needed. Timely data ensures decisions are based on current, valid information; out-of-date data can lead to incorrect or harmful decisions. (b) Relevance: Data integrity also means the data collected and used must be relevant to the task or decision. Irrelevant or extraneous data can obscure important facts and reduce the reliability of processing outcomes.",
+"working_steps": [
+"(a) Ensure data is updated, processed and delivered within required timeframes to remain accurate for decisions.",
+"(b) Collect and use only data that directly supports the intended processing or decision to keep results meaningful and accurate."
+]
+},
+{
+  "id": 11,
+"title": ":",
+"question": "Write an example for each of the following cell reference methods in spreadsheets: Mixed reference, Absolute reference, Relative reference",
+"solution": "Mixed reference example: A$1 or $A1 (e.g., copy formula =A$1*B2 — row is fixed, column relative). Absolute reference example: $B$3 (both column and row fixed; copying the formula always refers to B3). Relative reference example: C2 (both row and column change when formula is copied).",
+"working_steps": [
+"Mixed: A$1 — column changes on copy, row 1 remains fixed.",
+"Absolute: $B$3 — neither column nor row changes on copy.",
+"Relative: C2 — both column and row adjust relative to new position."
+]
+},
+{
+  "id": 12,
+"title": ":",
+"question": "State three reasons that have led most business people to prefer the use of Electronic Funds Transfer (EFT) as a mode of payment.",
+"solution": "Three reasons: (1) Speed and convenience — EFTs transfer money quickly without physical cash handling; (2) Security and traceability — electronic records reduce theft and provide audit trails for transactions; (3) Cost-effectiveness and automation — EFT reduces paperwork, bank visit costs and integrates with accounting systems for automatic reconciliation.",
+"working_steps": [
+"EFTs enable fast transfers (same day or instant) improving cash flow.",
+"Transactions are recorded electronically making tracking and auditing easier.",
+"EFT reduces manual processing costs and supports automated payments and payroll."
+]
+},
+{
+  "id": 13,
+"title": ":",
+"question": "Explain the term authenticity as a criterion for software selection.",
+"solution": "Authenticity means the software is genuine and comes from a trusted, legitimate source (original vendor or authorised reseller). It guarantees the product is licensed, free from tampering or malware, and that the vendor’s identity and claims (features, version, support) can be verified before purchase.",
+"working_steps": [
+"Check vendor credentials and official distribution channels.",
+"Verify digital signatures/licenses and product keys.",
+"Confirm the software package has not been altered (no malware or unauthorised patches)."
+]
+},
+{
+  "id": 14,
+"title": ":",
+"question": "Distinguish between word wrap and wrap text as used in word processing.",
+"solution": "Word wrap is the automatic breaking of a line so text continues on the next line without inserting line breaks (keeps paragraphs flowing when window/margin changes). Wrap text (around an object) controls how text flows around an inserted object (image/table) — e.g. square, tight, or through so the object and surrounding text are positioned attractively.",
+"working_steps": [
+"Word wrap: automatic line break inside a paragraph; users don’t press Enter.",
+"Wrap text (around object): defines whether text sits to the left/right, above/below, or surrounds an inserted object."
+]
+},
+{
+  "id": 15,
+"title": ":",
+"question": "A data analyst wishes to use a keyboard to navigate within a worksheet in an electronic spreadsheet. Other than arrow keys, state three examples of navigation keys the analyst may use.",
+"solution": "Examples: Home, End, Page Up (or Page Down). (Other valid answers: Tab, Ctrl + Arrow combinations.)",
+"working_steps": [
+"Home moves to the beginning of the row or cell depending on settings.",
+"End (often with arrow) moves to the last cell in a region or end of data.",
+"Page Up / Page Down scrolls the worksheet up or down by one screen."
+]
+},
+{
+  "id": 16,
+"title": ":",
+"question": "Explain the function of a web server on the internet.",
+"solution": "A web server stores, processes and serves web resources (HTML pages, images, scripts) in response to client requests (usually HTTP/HTTPS). It listens for requests, runs server-side code if needed, returns responses (web pages or data), logs activity, and may enforce security rules such as authentication and SSL/TLS encryption.",
+"working_steps": [
+"Accept HTTP/HTTPS requests from clients (browsers or apps).",
+"Locate or generate the requested resource (static file or dynamic content).",
+"Send the appropriate HTTP response back to the client and log the transaction."
+]
+},
+{
+  "id": 17,
+"title": ":",
+"question": "State three characteristics of a source code in programming.",
+"solution": "Typical characteristics: (1) Human-readable text written in a programming language (with identifiers, keywords and comments); (2) Structured and modular (functions, procedures, modules) to support readability and maintenance; (3) Annotated with comments and documentation to explain intent and make maintenance easier.",
+"working_steps": [
+"Source code is plain text that a programmer can read and edit.",
+"It is organised into logical units (modules, classes, functions).",
+"It often contains comments and documentation for maintainability."
+]
+},
+{
+  "id": 18,
+"title": ":",
+"question": "A systems programmer opts to develop an application using a low-level programming language. Explain three reasons for the option.",
+"solution": "Reasons: (1) Performance — low-level languages (e.g., assembly, C for close-to-hardware coding) allow fine control of CPU and memory, producing faster and more efficient code; (2) Direct hardware access — needed for device drivers, firmware or real-time systems where direct manipulation of registers and I/O is required; (3) Small footprint & determinism — low-level code can minimise memory and storage use and give predictable timing (critical for embedded or real-time applications).",
+"working_steps": [
+"Low-level languages permit manual optimisation for speed and size.",
+"They allow direct interaction with hardware and special CPU features.",
+"They give tight control of resources and predictable behaviour for real-time systems."
+]
+},
+{
+  "id": 19,
+"title": ":",
+"question": "Draw a flowchart for a program that prints the following sequence of numbers: 6, 9, 12, 15, ... for all values less than 150.",
+"solution": "Flowchart (text form):\nSTART → Set n = 6 → Is n < 150 ? → YES → PRINT n → n = n + 3 → GO TO Is n < 150 ? → NO → END.",
+"working_steps": [
+"Initialize n to 6 (first term).",
+"Check condition n < 150; if true print n then increment n by 3 and repeat.",
+"Stop when n ≥ 150."
+]
+},
+{
+  "id": 20,
+"title": ":",
+"question": "State three factors that may be considered when creating user forms during system development.",
+"solution": "Consider: (1) Usability and clarity — clear labels, logical field order, sensible defaults and simple layout so users can complete forms quickly and with few errors; (2) Validation and data integrity — input checks (required fields, type checks, ranges) to prevent invalid data being entered; (3) Accessibility and compatibility — support keyboard navigation, screen readers and different devices/browsers so all users can use the forms.",
+"working_steps": [
+"Design labels and layout that match user tasks and reduce confusion.",
+"Implement client/server-side validation rules to enforce correct data.",
+"Ensure forms are accessible (tab order, ARIA labels) and work across devices."
+]
+},
+{
+  "id": 21,
+"title": ":",
+"question": "Explain two benefits of carrying out unit testing during system development.",
+"solution": "Benefits: (1) Early detection of bugs — unit testing finds errors in individual components quickly before they affect other parts, making them cheaper and easier to fix; (2) Easier maintenance and refactoring — having unit tests gives developers confidence to change code, since tests will catch regressions and verify behaviour.",
+"working_steps": [
+"Write tests for small units (functions or classes) to check expected behaviour.",
+"Run tests frequently to detect regressions or logic errors early."
+]
+},
+{
+  "id": 22,
+"title": ":",
+"question": "System development companies are opting to hire employees from any part of the world. State three web development related skills that these companies may look for.",
+"solution": "Common sought skills: (1) Front-end development (HTML, CSS, JavaScript and familiarity with frameworks like React/Angular/Vue) for building responsive user interfaces; (2) Back-end/API development (Node.js, Python/Django, Java, RESTful APIs and database skills such as SQL/NoSQL) to build server logic and data storage; (3) Version control and deployment skills (Git, CI/CD, containerisation like Docker) to collaborate, automate tests and reliably deploy applications.",
+"working_steps": [
+"Front-end: craft interactive, accessible UI using modern frameworks and responsive design.",
+"Back-end: implement APIs, authentication, business logic and database integration.",
+"DevOps/tools: use Git, continuous integration and containers for teamwork and deployment."
+]
+},
+{
+  "id": 23,
+"title": ":",
+"question": "A company realised that its systems had been jammed and all its online services made inaccessible. Explain three control measures the company should have put in place to prevent this occurrence.",
+"solution": "Controls: (1) DDoS protection and traffic filtering — use specialised DDoS mitigation services, web application firewalls (WAF) and rate limiting to detect and block malicious traffic before it overwhelms servers; (2) Redundancy and load balancing — distribute services across multiple servers/locations and use load balancers and CDNs so a single point of failure or traffic spike does not take services down; (3) Monitoring, incident response and capacity planning — continuous monitoring and alerts, an incident response plan, and regular stress/load testing to ensure infrastructure can handle peaks and to react quickly when attacks or faults occur.",
+"working_steps": [
+"Deploy network-level defences (WAF, anti-DDoS, firewall rules) to filter bad traffic.",
+"Implement redundancy (multiple servers, geographically distributed data centres) and use load balancers/CDNs.",
+"Monitor performance, test capacity, and maintain an incident response plan for fast mitigation."
+]
+}
+]
+}

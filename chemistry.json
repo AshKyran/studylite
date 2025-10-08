@@ -1,0 +1,188 @@
+{
+  "subject": "Chemistry",
+  "paper": "Paper 1&2",
+  "source": "StudyLite Kenya",
+  "metadata": {
+    "type": "theoretical",
+    "description": "Chemistry questions converted to quiz JSON.",
+    "level": "KCSE",
+    "last_updated": "2025-10-08"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "title": ":",
+      "question": ":\n Name the apparatus that can be used to:\n a) Measure volume of solutions more accurately than a measuring cylinder.\n b) Lower a burning piece of magnesium ribbon into a gas jar.\n c) Store and keep substances free from moisture.",
+      "solution": "/ Answer:\n a) Burette – more accurate for measuring volumes because it has fine graduations and a tap for controlled delivery.\n b) Tongs / Crucible tongs – used to safely handle burning magnesium ribbon and place it into a gas jar.\n c) Desiccator – used to store substances and keep them dry by preventing moisture contact.",
+      "working_steps": []
+    },
+    {
+      "id": 2,
+      "title": ":",
+      "question": ":\n A radioactive isotope decays by either emission of alpha (α) or beta (β) particles.\na) Explain why alpha particles have a higher ionising power compared to beta particles.\n b) Explain how alpha and beta particles can be distinguished in terms of their penetrating powers.",
+      "solution": "/ Answer:\na) Ionising power:\nAlpha particles (α) are heavier and carry a +2 charge.\n\n\nThey interact strongly with electrons in atoms, causing many ionisations over a short distance.\n\n\nBeta particles (β) are lighter and carry a -1 charge, causing fewer ionisations.\n\n\nConclusion: α-particles have higher ionising power than β-particles.\n\n\nb) Penetrating power:\nα-particles: low penetrating power, stopped by paper or a few cm of air.\n\n\nβ-particles: moderate penetrating power, can pass through paper but stopped by thin metal like aluminium.\n\n\nObservation: Using absorbers (paper and aluminium), α and β can be distinguished.",
+      "working_steps": []
+    },
+    {
+      "id": 3,
+      "title": ":",
+      "question": ":\n Three bottles containing zinc nitrate, aluminium nitrate, or lead(II) nitrate have their labels missing. Describe a chemical test using aqueous sodium sulphate and aqueous ammonia to label the bottles correctly.",
+      "solution": "/ Answer:\nTest with sodium sulphate (Na₂SO₄):\n\n\nAdd aqueous sodium sulphate to small samples from each bottle.\n\n\nObservation:\n\n\nLead(II) nitrate → white precipitate of PbSO₄ forms\n\n\nZinc nitrate & Aluminium nitrate → no precipitate\n\n\nConclusion: The bottle that forms a precipitate contains lead(II) nitrate.\n\n\nTest with aqueous ammonia (NH₃(aq)):\n\n\nAdd aqueous ammonia to the remaining solutions.\n\n\nObservations:\n\n\nZinc nitrate → white precipitate of Zn(OH)₂ dissolves in excess NH₃, giving a clear solution\n\n\nAluminium nitrate → white precipitate of Al(OH)₃ does not dissolve in excess NH₃\n\n\nConclusion:\n\n\nZn(NO₃)₂ → precipitate dissolves in excess NH₃\n\n\nAl(NO₃)₃ → precipitate insoluble in excess NH₃\n\n\nFinal labeling:\nPb(NO₃)₂ → forms white precipitate with Na₂SO₄\n\n\nZn(NO₃)₂ → forms precipitate with NH₃, dissolves in excess\n\n\nAl(NO₃)₃ → forms precipitate with NH₃, insoluble in excess",
+      "working_steps": []
+    },
+    {
+      "id": 4,
+      "title": ":",
+      "question": ":\n For the equilibrium reaction:\n2NO2(g)↔N2O4(g),ΔH=−ve2NO_2(g) \\leftrightarrow N_2O_4(g), \\quad \\Delta H = -\\text{ve}2NO2​(g)↔N2​O4​(g),ΔH=−ve\n(Brown gas ↔ Yellow gas)\na) Give a reason why the enthalpy change is negative (exothermic).\n b) State and explain the observations made when the pressure in the syringe is increased.",
+      "solution": "/ Answer:\na) Enthalpy change:\nThe reaction releases heat: forming N₂O₄ from NO₂ releases energy.\n\n\nReason: Fewer moles of gas on the product side (2 NO₂ → 1 N₂O₄) → energy released → exothermic → ΔH negative.\n\n\nb) Effect of increased pressure:\nIncreasing pressure shifts equilibrium to the side with fewer moles (Le Chatelier’s principle).\n\n\nFewer moles = N₂O₄ (yellow) increases.\n\n\nObservation: Gas color changes from brown to more yellow.",
+      "working_steps": []
+    },
+    {
+      "id": 5,
+      "title": ":",
+      "question": ":\n Ammonia gas can be prepared using ammonium sulphate and sodium hydroxide.\na) Write an equation for the reaction.\n b) Draw a labeled diagram of a set-up of the apparatus that can be used to prepare and collect a sample of dry ammonia.",
+      "solution": "/ Answer:\na) Chemical equation:\n(NH4)2SO4(aq)+2NaOH(aq)→2NH3(g)+Na2SO4(aq)+2H2O(l)(NH_4)_2SO_4(aq) + 2NaOH(aq) \\rightarrow 2NH_3(g) + Na_2SO_4(aq) + 2H_2O(l)(NH4​)2​SO4​(aq)+2NaOH(aq)→2NH3​(g)+Na2​SO4​(aq)+2H2​O(l)\nb) Apparatus setup (description):\nConical flask → contains mixture of ammonium sulphate and sodium hydroxide.\n\n\nDelivery tube → carries evolved NH₃ gas.\n\n\nDrying tube → contains quicklime (CaO) or concentrated NaOH pellets to dry NH₃.\n\n\nGas jar → collects dry NH₃ over water or by downward displacement of air.\n\n\nNotes for diagram:\nEnsure flask is heated gently if solid reactants are used.\n\n\nShow proper labeling: flask, delivery tube, drying tube, gas jar.",
+      "working_steps": []
+    },
+    {
+      "id": 6,
+      "title": ":",
+      "question": ":\n The electrolysis of molten lead(II) bromide was carried out.\na) Write equations for the reactions at the anode and cathode.\n b) State the observations at each electrode.",
+      "solution": "/ Answer:\na) Electrode reactions:\nCathode (reduction):\n\n\nPb2++2e−→Pb(l)Pb^{2+} + 2e^- \\rightarrow Pb(l)Pb2++2e−→Pb(l)\nAnode (oxidation):\n\n\n2Br−→Br2(g)+2e−2Br^- \\rightarrow Br_2(g) + 2e^-2Br−→Br2​(g)+2e−\nb) Observations:\nCathode: Liquid lead metal forms.\n\n\nAnode: Brown vapors of bromine evolve.",
+      "working_steps": []
+    },
+    {
+      "id": 7,
+      "title": ":",
+      "question": ":\n Styrene is an important monomer. Suggest a reagent and conditions for:\na) Addition polymerization to form polystyrene.\n b) Reaction to produce styrene oxide.",
+      "solution": "/ Answer:\na) Polymerization to polystyrene:\nReagent / initiator: Benzoyl peroxide or heat (radical initiator).\n\n\nCondition: Heat or high pressure.\n\n\nnC6H5CH=CH2→heatBenzoyl peroxide[−CH2−CH(C6H5)−]nnC_6H_5CH=CH_2 \\xrightarrow[\\text{heat}]{\\text{Benzoyl peroxide}} [-CH_2-CH(C_6H_5)-]_nnC6​H5​CH=CH2​Benzoyl peroxideheat​[−CH2​−CH(C6​H5​)−]n​\nb) Formation of styrene oxide (epoxidation):\nReagent: Peracetic acid (CH₃CO₃H) or m-CPBA (meta-chloroperbenzoic acid).\n\n\nCondition: Cold, inert solvent.\n\n\nC6H5CH=CH2+RCO3H→C6H5CH−CH2(epoxide)C_6H_5CH=CH_2 + RCO_3H \\rightarrow C_6H_5CH-CH_2 \\text{(epoxide)}C6​H5​CH=CH2​+RCO3​H→C6​H5​CH−CH2​(epoxide)",
+      "working_steps": []
+    },
+    {
+      "id": 8,
+      "title": ":",
+      "question": ":\n Explain why ethanol has a higher boiling point than dimethyl ether.",
+      "solution": "/ Answer:\nEthanol (CH₃CH₂OH) → can form hydrogen bonds (–OH group).\n\n\nDimethyl ether (CH₃OCH₃) → cannot form hydrogen bonds effectively, only weak dipole-dipole forces.\n\n\nHydrogen bonding is stronger → ethanol molecules are held together more strongly → higher boiling point.",
+      "working_steps": []
+    },
+    {
+      "id": 9,
+      "title": ":",
+      "question": ":\n A sample of an unknown gas occupies 5.6 dm³ at 1 atm and 27°C. Calculate the number of moles of the gas.",
+      "solution": "/ Answer:\nGiven:\nV=5.6 dm³=5.6×10−3 m³V = 5.6 \\text{ dm³} = 5.6 \\times 10^{-3} \\text{ m³}V=5.6 dm³=5.6×10−3 m³\n\n\nP=1 atm=1.013×105 PaP = 1 \\text{ atm} = 1.013 \\times 10^5 \\text{ Pa}P=1 atm=1.013×105 Pa\n\n\nT=27°C=300KT = 27°C = 300 KT=27°C=300K (approx)\n\n\nR=8.314 J mol⁻¹ K⁻¹R = 8.314 \\text{ J mol⁻¹ K⁻¹}R=8.314 J mol⁻¹ K⁻¹\n\n\nUse ideal gas equation:\nPV=nRT⇒n=PVRTPV = nRT \\Rightarrow n = \\frac{PV}{RT}PV=nRT⇒n=RTPV​\nStep-by-step:\nn=1.013×105×5.6×10−38.314×300n = \\frac{1.013 \\times 10^5 \\times 5.6 \\times 10^{-3}}{8.314 \\times 300}n=8.314×3001.013×105×5.6×10−3​ n=567.282494.2≈0.227 moln = \\frac{567.28}{2494.2} \\approx 0.227 \\text{ mol}n=2494.2567.28​≈0.227 mol\nAnswer: n≈0.23 moln \\approx 0.23 \\text{ mol}n≈0.23 mol",
+      "working_steps": []
+    },
+    {
+      "id": 10,
+      "title": ":",
+      "question": ":\n The rate of a reaction doubles when the concentration of reactant A is doubled, but does not change when the concentration of B is doubled. Determine the order of reaction with respect to A, B, and overall.",
+      "solution": "/ Answer:\nGiven:\nRate doubles when [A] doubles → first order with respect to A.\n\n\nRate unchanged when [B] doubles → zero order with respect to B.\n\n\nRate law:\nRate=k[A]1[B]0=k[A]\\text{Rate} = k[A]^1[B]^0 = k[A]Rate=k[A]1[B]0=k[A]\nOverall order:\n1+0=11 + 0 = 11+0=1\nAnswer:\nOrder w.r.t A: 1\n\n\nOrder w.r.t B: 0\n\n\nOverall order: 1",
+      "working_steps": []
+    },
+    {
+      "id": 11,
+      "title": ":",
+      "question": ":\n Hydrogen gas can be prepared by electrolysis of acidified water.\na) Explain why the water is acidified before electrolysis.\n b) Calculate the volume of hydrogen gas produced when a current of 12 A is used for 2 hours. (Faraday = 96,500 C, 1 mol gas = 24,000 cm³)",
+      "solution": "/ Answer:\na) Why acidify water:\nPure water is a poor conductor of electricity.\n\n\nAdding an acid (e.g., H₂SO₄) increases the ionic conductivity, allowing the current to pass.\n\n\nb) Volume of H₂:\nStep 1: Total charge passed\nQ=I⋅t=12 A⋅2 h⋅3600 s/h=12⋅7200=86,400 CQ = I \\cdot t = 12 \\text{ A} \\cdot 2 \\text{ h} \\cdot 3600 \\text{ s/h} = 12 \\cdot 7200 = 86,400 \\text{ C}Q=I⋅t=12 A⋅2 h⋅3600 s/h=12⋅7200=86,400 C\nStep 2: Moles of electrons\nMoles e⁻=QF=86,40096,500≈0.895 mol e⁻\\text{Moles e⁻} = \\frac{Q}{F} = \\frac{86,400}{96,500} \\approx 0.895 \\text{ mol e⁻}Moles e⁻=FQ​=96,50086,400​≈0.895 mol e⁻\nStep 3: Moles of H₂ formed\n2H⁺+2e−→H22\\text{H⁺} + 2e⁻ \\rightarrow H₂2H⁺+2e−→H2​\n2 moles of electrons produce 1 mole of H₂:\n\n\nnH2=0.8952≈0.4475 moln_{H₂} = \\frac{0.895}{2} \\approx 0.4475 \\text{ mol}nH2​​=20.895​≈0.4475 mol\nStep 4: Volume of H₂\nV=n⋅24,000=0.4475⋅24,000≈10,740 cm³≈10.7 dm³V = n \\cdot 24,000 = 0.4475 \\cdot 24,000 \\approx 10,740 \\text{ cm³} \\approx 10.7 \\text{ dm³}V=n⋅24,000=0.4475⋅24,000≈10,740 cm³≈10.7 dm³\nAnswer: V≈10.7 dm³V \\approx 10.7 \\text{ dm³}V≈10.7 dm³",
+      "working_steps": []
+    },
+    {
+      "id": 12,
+      "title": ":",
+      "question": ":\n Ethanol can be prepared from glucose:\nC6H12O6(aq)→2C2H5OH(aq)+2CO2(g)C_6H_{12}O_6(aq) \\rightarrow 2C_2H_5OH(aq) + 2CO_2(g)C6​H12​O6​(aq)→2C2​H5​OH(aq)+2CO2​(g)\na) Explain why temperatures >30 °C are not used.\n b) The concentration of ethanol is ~12%. How can it be increased?\n c) State one use of ethanol in hospitals.",
+      "solution": "/ Answer:\na) Temperature limitation:\nYeast produces ethanol efficiently at ≤30 °C.\n\n\nHigher temperature → yeast denatured → fermentation stops.\n\n\nb) Increasing ethanol concentration:\nUse fractional distillation to concentrate ethanol.\n\n\nc) Use of ethanol in hospitals:\nAs disinfectant or antiseptic for cleaning wounds and instruments.",
+      "working_steps": []
+    },
+    {
+      "id": 13,
+      "title": ":",
+      "question": ":\n Paper chromatography of a dye:\na) Why is the baseline drawn with a pencil?\n b) Why is the paper placed with baseline above solvent?\n c) Why is the beaker covered?",
+      "solution": "/ Answer:\na) Pencil baseline:\nPencil does not dissolve in solvent, unlike ink, preventing interference.\n\n\nb) Baseline above solvent:\nPrevents the sample from dissolving directly into the solvent, allowing proper separation.\n\n\nc) Covered beaker:\nMaintains saturated solvent vapour, reducing evaporation and ensuring consistent movement.",
+      "working_steps": []
+    },
+    {
+      "id": 14,
+      "title": ":",
+      "question": ":\n 6.12 g of H₂O₂ dissolved in 100 cm³ of water decomposes:\n2H2O2(aq)→2H2O(l)+O2(g)2H_2O_2(aq) \\rightarrow 2H_2O(l) + O_2(g)2H2​O2​(aq)→2H2​O(l)+O2​(g)\na) Name a suitable catalyst.\n b) Calculate moles of H₂O₂.\n c) Calculate volume of O₂ produced (1 mol gas = 24,000 cm³).",
+      "solution": "/ Answer:\na) Catalyst:\nManganese(IV) oxide, MnO₂.\n\n\nb) Moles of H₂O₂:\nMolar mass H₂O₂=2(1)+2(16)=34 g/mol\\text{Molar mass H₂O₂} = 2(1) + 2(16) = 34\\text{ g/mol}Molar mass H₂O₂=2(1)+2(16)=34 g/mol n=6.1234≈0.18 moln = \\frac{6.12}{34} \\approx 0.18 \\text{ mol}n=346.12​≈0.18 mol\nc) Volume of O₂ produced:\nStoichiometry: 2 mol H₂O₂ → 1 mol O₂\n\n\nnO2=0.182=0.09 moln_{O₂} = \\frac{0.18}{2} = 0.09 \\text{ mol}nO2​​=20.18​=0.09 mol V=0.09⋅24,000≈2,160 cm³V = 0.09 \\cdot 24,000 \\approx 2,160 \\text{ cm³}V=0.09⋅24,000≈2,160 cm³\nAnswer: V≈2.16 dm³V \\approx 2.16 \\text{ dm³}V≈2.16 dm³",
+      "working_steps": []
+    },
+    {
+      "id": 15,
+      "title": ":",
+      "question": ":\n Describe how a sample of ammonium nitrate can be prepared using ammonia as the only nitrogen-containing compound.",
+      "solution": "/ Answer:\nMethod:\nDissolve ammonia gas in water → forms ammonium hydroxide:\n\n\nNH3+H2O→NH4OHNH_3 + H_2O \\rightarrow NH_4OHNH3​+H2​O→NH4​OH\nAdd nitric acid carefully (neutralization):\n\n\nNH4OH+HNO3→NH4NO3+H2ONH_4OH + HNO_3 \\rightarrow NH_4NO_3 + H_2ONH4​OH+HNO3​→NH4​NO3​+H2​O\nEvaporate water to crystallize ammonium nitrate.\n\n\nObservations / Notes:\nWhite crystalline solid forms.\n\n\nHandle carefully, avoid heating too much (explosive when dry in bulk).",
+      "working_steps": []
+    },
+    {
+      "id": 16,
+      "title": ":",
+      "question": ":\n Sodium reacts with water to produce sodium hydroxide and hydrogen gas.\na) Write a balanced chemical equation.\n b) State one safety precaution when carrying out the reaction.\n c) Explain why the reaction is more vigorous with hot water.",
+      "solution": "/ Answer:\na) Balanced equation:\n2Na(s)+2H2O(l)→2NaOH(aq)+H2(g)2Na(s) + 2H_2O(l) \\rightarrow 2NaOH(aq) + H_2(g)2Na(s)+2H2​O(l)→2NaOH(aq)+H2​(g)\nb) Safety precaution:\nConduct in small quantities and away from flammable materials.\n\n\nWear gloves and goggles.\n\n\nc) Hot water effect:\nHigher temperature → increased kinetic energy → faster reaction → more vigorous release of H₂.",
+      "working_steps": []
+    },
+    {
+      "id": 17,
+      "title": ":",
+      "question": ":\n A student tested a solution of copper(II) sulfate with sodium hydroxide.\na) State the observation.\n b) Write a balanced equation for the reaction.\n c) Name the type of reaction.",
+      "solution": "/ Answer:\na) Observation:\nBlue precipitate forms.\n\n\nb) Equation:\nCuSO4(aq)+2NaOH(aq)→Cu(OH)2(s)+Na2SO4(aq)CuSO_4(aq) + 2NaOH(aq) \\rightarrow Cu(OH)_2(s) + Na_2SO_4(aq)CuSO4​(aq)+2NaOH(aq)→Cu(OH)2​(s)+Na2​SO4​(aq)\nc) Type of reaction:\nDouble displacement (precipitation reaction).",
+      "working_steps": []
+    },
+    {
+      "id": 18,
+      "title": ":",
+      "question": ":\n Explain how you would distinguish between zinc nitrate, aluminium nitrate, and lead(II) nitrate using aqueous sodium sulfate and aqueous ammonia.",
+      "solution": "/ Answer:\nStep 1: Sodium sulfate test:\nAdd Na₂SO₄ to each solution:\n\n\nLead(II) nitrate → white precipitate of PbSO₄.\n\n\nZinc nitrate → no precipitate.\n\n\nAluminium nitrate → no precipitate.\n\n\nStep 2: Aqueous ammonia test:\nAdd NH₃(aq):\n\n\nZinc nitrate → white precipitate Zn(OH)₂, dissolves in excess NH₃ → [Zn(NH₃)₄]²⁺ (colorless solution).\n\n\nAluminium nitrate → white precipitate Al(OH)₃, does not dissolve in excess NH₃.\n\n\nSummary Table:\nSalt\nNa₂SO₄\nNH₃(aq)\nPb(NO₃)₂\nWhite ppt\nSoluble in excess? N/A\nZn(NO₃)₂\nNone\nWhite ppt → dissolves\nAl(NO₃)₃\nNone\nWhite ppt → insoluble",
+      "working_steps": []
+    },
+    {
+      "id": 19,
+      "title": ":",
+      "question": ":\n Ethanol burns in air:\nC2H5OH+3O2→2CO2+3H2OC_2H_5OH + 3O_2 \\rightarrow 2CO_2 + 3H_2OC2​H5​OH+3O2​→2CO2​+3H2​O\na) State one observation during the reaction.\n b) Calculate mass of CO₂ produced from 46 g ethanol. (Molar mass C₂H₅OH = 46 g/mol, CO₂ = 44 g/mol)",
+      "solution": "/ Answer:\na) Observation:\nBlue flame, water vapor, and carbon dioxide formed.\n\n\nb) Mass of CO₂:\nStep 1: Moles of ethanol\nn=4646=1 moln = \\frac{46}{46} = 1 \\text{ mol}n=4646​=1 mol\nStep 2: Moles of CO₂ produced\nC2H5OH+3O2→2CO2+3H2OC_2H_5OH + 3O_2 \\rightarrow 2CO_2 + 3H_2OC2​H5​OH+3O2​→2CO2​+3H2​O\n1 mol ethanol → 2 mol CO₂\n\n\nnCO2=2 moln_{CO₂} = 2 \\text{ mol}nCO2​​=2 mol\nStep 3: Mass of CO₂\nm=n⋅M=2⋅44=88 gm = n \\cdot M = 2 \\cdot 44 = 88 \\text{ g}m=n⋅M=2⋅44=88 g\nAnswer: 88 g CO₂",
+      "working_steps": []
+    },
+    {
+      "id": 20,
+      "title": ":",
+      "question": ":\n Ammonium chloride is heated:\na) Write a chemical equation for decomposition.\n b) State one observation.\n c) Explain how the gas evolved can be collected.",
+      "solution": "/ Answer:\na) Equation:\nNH4Cl(s)→ΔNH3(g)+HCl(g)NH_4Cl(s) \\xrightarrow{\\Delta} NH_3(g) + HCl(g)NH4​Cl(s)Δ​NH3​(g)+HCl(g)\nb) Observation:\nWhite fumes (of NH₃ and HCl mixing in air) appear.\n\n\nSolid disappears gradually.\n\n\nc) Gas collection:\nSublimation/Downward delivery: Ammonium chloride can be sublimed into a cold container because the gas mixture is denser than air.",
+      "working_steps": []
+    },
+    {
+      "id": 21,
+      "title": ":",
+      "question": ":\n Hydrogen gas can be prepared by electrolysis of acidified water.\na) Explain why the water is acidified before electrolysis.\n b) Calculate the volume of hydrogen gas produced when a current of 12 A is used for 2 hours. (Faraday = 96,500 C, 1 mol gas = 24,000 cm³)",
+      "solution": "/ Answer:\na) Reason for acidification:\nPure water is a poor conductor.\n\n\nAdding an acid (HCl or H₂SO₄) provides ions (H⁺, SO₄²⁻) → increases conductivity.\n\n\nb) Calculation:\nStep 1: Total charge (Q)\nQ=I⋅t=12 A⋅(2⋅3600 s)=12⋅7200=86,400 CQ = I \\cdot t = 12 \\, A \\cdot (2 \\cdot 3600 \\, s) = 12 \\cdot 7200 = 86,400 \\, CQ=I⋅t=12A⋅(2⋅3600s)=12⋅7200=86,400C\nStep 2: Moles of electrons\nn(e−)=QF=86,40096,500≈0.895 mol e⁻n(e^-) = \\frac{Q}{F} = \\frac{86,400}{96,500} \\approx 0.895 \\, \\text{mol e⁻}n(e−)=FQ​=96,50086,400​≈0.895mol e⁻\nStep 3: Moles of H₂\n Reaction at cathode:\n2H++2e−→H22H^+ + 2e^- \\rightarrow H_22H++2e−→H2​\n2 moles of electrons produce 1 mole H₂.\n\n\nn(H2)=0.8952≈0.4475 moln(H_2) = \\frac{0.895}{2} \\approx 0.4475 \\text{ mol}n(H2​)=20.895​≈0.4475 mol\nStep 4: Volume of H₂\nV=n⋅24,000≈0.4475⋅24,000≈10,740 cm³V = n \\cdot 24,000 \\approx 0.4475 \\cdot 24,000 \\approx 10,740 \\, \\text{cm³}V=n⋅24,000≈0.4475⋅24,000≈10,740cm³\nAnswer: 10.74 L H₂",
+      "working_steps": []
+    },
+    {
+      "id": 22,
+      "title": ":",
+      "question": ":\n Ethanol can be prepared from glucose:\nC6H12O6(aq)→2C2H5OH(aq)+2CO2(g)C_6H_{12}O_6(aq) \\rightarrow 2C_2H_5OH(aq) + 2CO_2(g)C6​H12​O6​(aq)→2C2​H5​OH(aq)+2CO2​(g)\na) Explain why temperatures above 30 °C are not used.\n b) State how to increase ethanol concentration in the product.\n c) Give one hospital use of ethanol.",
+      "solution": "/ Answer:\na) Temperature limit:\nYeast ferments glucose → produces ethanol.\n\n\nT > 30 °C → enzymes denature → fermentation slows/stops.\n\n\nb) Increase ethanol concentration:\nFractional distillation after fermentation.\n\n\nOr remove ethanol during fermentation to prevent inhibition.\n\n\nc) Hospital use:\nDisinfectant / antiseptic.",
+      "working_steps": []
+    },
+    {
+      "id": 23,
+      "title": ":",
+      "question": ":\n Paper chromatography procedure:\na) Give reasons for:\nDrawing baseline with a pencil.\n\n\nPlacing baseline above solvent surface.\n\n\nCovering the beaker.",
+      "solution": "/ Answer:\nPencil baseline: graphite is insoluble → does not dissolve in solvent.\n\n\nBaseline above solvent: prevents sample from dissolving in solvent.\n\n\nCovering beaker: prevents evaporation → maintains constant solvent composition.",
+      "working_steps": []
+    },
+    {
+      "id": 24,
+      "title": ":",
+      "question": ":\n 6.12 g hydrogen peroxide decomposes:\n2H2O2(aq)→2H2O(l)+O2(g)2H_2O_2(aq) \\rightarrow 2H_2O(l) + O_2(g)2H2​O2​(aq)→2H2​O(l)+O2​(g)\na) Name a suitable catalyst.\n b) Calculate:\nMoles H₂O₂\n\n\nVolume of O₂ gas produced (1 mol gas = 24,000 cm³)",
+      "solution": "/ Answer:\na) Catalyst:\nManganese(IV) oxide (MnO₂)\n\n\nb) Calculation:\nStep 1: Moles of H₂O₂\nMH2O2=2(1)+2(16)=34 g/molM_{H_2O_2} = 2(1) + 2(16) = 34 \\, g/molMH2​O2​​=2(1)+2(16)=34g/mol n=6.1234≈0.18 moln = \\frac{6.12}{34} \\approx 0.18 \\text{ mol}n=346.12​≈0.18 mol\nStep 2: Moles of O₂\n Reaction: 2 H₂O₂ → 1 O₂\nn(O2)=0.182=0.09 moln(O_2) = \\frac{0.18}{2} = 0.09 \\, \\text{mol}n(O2​)=20.18​=0.09mol\nStep 3: Volume of O₂\nV=0.09⋅24,000≈2,160 cm³V = 0.09 \\cdot 24,000 \\approx 2,160 \\, \\text{cm³}V=0.09⋅24,000≈2,160cm³\nAnswer: 2.16 L O₂",
+      "working_steps": []
+    },
+    {
+      "id": 25,
+      "title": ":",
+      "question": ":\n Helium is used in weather balloons. A balloon is filled with 100 g of He at 25 °C, 1 atm.\na) Determine the volume at 25 °C, 1 atm.\n b) Determine the volume at 10 °C, 0.85 atm.",
+      "solution": "/ Answer:\nStep 1: Moles of He\nn=mM=1004=25 moln = \\frac{m}{M} = \\frac{100}{4} = 25 \\, \\text{mol}n=Mm​=4100​=25mol\nStep 2: Volume at 25 °C, 1 atm\nV=n⋅24 dm³=25⋅24=600 dm³V = n \\cdot 24 \\, \\text{dm³} = 25 \\cdot 24 = 600 \\, \\text{dm³}V=n⋅24dm³=25⋅24=600dm³\nStep 3: Volume at 10 °C, 0.85 atm\nUse combined gas law: P1V1T1=P2V2T2\\frac{P_1 V_1}{T_1} = \\frac{P_2 V_2}{T_2}T1​P1​V1​​=T2​P2​V2​​\n\n\nV2=V1⋅P1P2⋅T2T1V_2 = V_1 \\cdot \\frac{P_1}{P_2} \\cdot \\frac{T_2}{T_1}V2​=V1​⋅P2​P1​​⋅T1​T2​​\nConvert to Kelvin:\nT1=25+273=298 K,T2=10+273=283 KT_1 = 25 + 273 = 298 \\, K, \\quad T_2 = 10 + 273 = 283 \\, KT1​=25+273=298K,T2​=10+273=283K V2=600⋅10.85⋅283298≈600⋅1.176⋅0.949≈670 dm³V_2 = 600 \\cdot \\frac{1}{0.85} \\cdot \\frac{283}{298} \\approx 600 \\cdot 1.176 \\cdot 0.949 \\approx 670 \\, \\text{dm³}V2​=600⋅0.851​⋅298283​≈600⋅1.176⋅0.949≈670dm³\nAnswer:\nV₁ = 600 dm³\n\n\nV₂ ≈ 670 dm³",
+      "working_steps": []
+    }
+  ]
+}

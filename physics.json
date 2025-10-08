@@ -1,0 +1,214 @@
+{
+  "subject": "Physics",
+  "paper": "Paper 1&2",
+  "source": "StudyLite Kenya",
+  "metadata": {
+    "type": "theoretical",
+    "description": "Sample physics study questions.",
+    "level": "KCSE",
+    "last_updated": "2025-10-08"
+  },
+  "questions": [
+  {
+    "id": 1,
+    "title": ":",
+    "question": "Explain why weight of an object is a vector quantity.",
+    "solution": "Weight is the gravitational force acting on an object. Like all forces it has both magnitude (how strong the pull is, e.g. in newtons) and direction (towards the centre of the Earth). Because it requires both magnitude and direction to be fully described, weight is a vector quantity.",
+    "working_steps": [
+      "Recognise weight = gravitational force.",
+      "Note it has magnitude (N) and a specific direction (towards Earth's centre).",
+      "Conclude it satisfies the definition of a vector."
+    ]
+  },
+  {
+       "id": 2,
+    "title": ":",
+    "question": "It is observed that in order to balance a see-saw, the heavier child sits closer to the pivot. State the reason for this observation.",
+    "solution": "Balancing requires equal moments (torques) about the pivot. Moment = weight × perpendicular distance from pivot. A heavier child has a larger weight, so to give the same moment as the lighter child the heavier child must sit at a smaller distance from the pivot. Thus balance is achieved by positioning the heavier child closer to the pivot."
+  },
+  {
+       "id": 3,
+    "title": ":",
+    "question": "Explain one way in which a person maintains stability when carrying a bucket of water in one hand.",
+    "solution": "A person increases stability by keeping the bucket close to the body (reducing the horizontal distance between the centre of mass of the load and the body) and widening the stance (standing with feet further apart). Holding the bucket close keeps the combined centre of gravity inside the base of support, reducing the tendency to topple.",
+    "working_steps": [
+      "Reduce moment caused by the bucket by holding it near the body.",
+      "Widen base of support (feet apart) so centre of gravity remains over the base."
+    ]
+  },
+  {
+       "id": 4,
+    "title": ":",
+    "question": "A machine raises a mass of 20 kg through a distance of 0.2 m when an effort of 100 N is moved through a distance of 0.32 m. Determine the velocity ratio of the machine.",
+    "solution": "Velocity ratio (VR) = distance moved by effort / distance moved by load. Here VR = 0.32 m / 0.20 m = 1.6.",
+    "working_steps": [
+      "Identify effort distance = 0.32 m, load distance = 0.20 m.",
+      "Compute VR = 0.32 ÷ 0.20 = 1.6."
+    ]
+  },
+  {
+       "id": 5,
+    "title": ":",
+    "question": "A gas bubble is released at the bottom of a pond containing water. It is observed that as the bubble rises to the water surface, it expands. Explain this observation.",
+    "solution": "Pressure in a fluid increases with depth. At greater depth the external pressure on the bubble is larger; as it rises the external pressure decreases. By Boyle’s law (for a given mass of gas at roughly constant temperature) pressure and volume are inversely related, so when external pressure falls the bubble’s volume increases and the bubble expands as it approaches the surface."
+  },
+  {
+       "id": 6,
+    "title": ":",
+    "question": "A stone of mass 200 g is tied at the end of a string 1 m long and is whirled in a horizontal circle at an angular velocity of 10 radians per second. Determine the centripetal force acting on the stone.",
+    "solution": "Centripetal force F = m ω² r.\nGiven m = 200 g = 0.200 kg, ω = 10 rad/s, r = 1 m.\nF = 0.200 × (10)² × 1 = 0.200 × 100 = 20 N. \nTherefore the centripetal force is 20 N.",
+    "working_steps": [
+      "Convert mass to kilograms: 200 g = 0.200 kg.",
+      "Apply F = m ω² r: F = 0.200 × 100 × 1 = 20 N."
+    ]
+  },
+  {
+       "id": 7,
+    "title": ":",
+    "question": "(a) It is observed that when salt is sprinkled onto the surface of ice at −2°C, the ice melts. Explain this observation.\n(b) State two factors that determine the pressure exerted by solids.\n(c) A person mixed 2 kg of hot water at 70°C with 3 kg of cold water at 22°C for bathing. Given that the specific heat capacity of water is 4200 J kg⁻¹ K⁻¹, determine the final temperature of the mixture, assuming there was no heat loss.\n(d) State two possible factors that can lead to heat loss in (c).",
+    "solution": "(a) Salt dissolves in the thin layer of liquid water that is always present on ice, forming a salt solution that has a lower freezing point than pure water (freezing-point depression). At −2°C the salted surface now has a freezing point below −2°C, so the ice melts to produce more solution. This is why salt causes ice to melt.\n\n(b) Two factors that determine pressure exerted by a solid are: (1) the magnitude of the force (or weight) acting on the surface, and (2) the area over which the force is distributed (pressure = force ÷ area). (Other acceptable answers include shape of contact surface or mass).\n\n(c) Use conservation of energy: heat lost by hot water = heat gained by cold water.\nLet final temperature = T_f.\n2 × 4200 × (70 − T_f) = 3 × 4200 × (T_f − 22).\nCancel 4200: 2(70 − T_f) = 3(T_f − 22).\n140 − 2T_f = 3T_f − 66 → 140 + 66 = 5T_f → 206 = 5T_f → T_f = 206/5 = 41.2°C.\n\n(d) Two factors causing heat loss: (1) heat loss to the surrounding air by convection (drafts or air movement), (2) heat loss by radiation from the water surface or by evaporation (open container), or poor insulation of the bath container.",
+    "working_steps": [
+      "(c) Set heat lost = heat gained and solve algebraically: 2c(70 − T_f) = 3c(T_f − 22) → solve for T_f → 41.2°C."
+    ]
+  },
+  {
+       "id": 8,
+    "title": ":",
+    "question": "During an experiment to verify a certain law, a student was provided with some masses, a spring and a metre rule.\n(a) State the law the student wanted to verify.\n(b) State one other apparatus the student needed in order to carry out the experiment.\n(c) Explain how the measurements taken during the experiment are used to verify the law in part (a).",
+    "solution": "(a) The law is Hooke’s law: within the elastic limit the extension of a spring is directly proportional to the applied load (force).\n\n(b) One other apparatus needed is a retort stand and clamp (to hang the spring securely) or a pointer/pan and boss/clamp. (A pointer attached to the spring helps measure small extensions accurately.)\n\n(c) Procedure and use of measurements: hang the spring from the clamp, attach known masses one at a time and measure the extension with the metre rule. Record force (weight of masses = mg) against extension. Plot a graph of force (vertical axis) versus extension (horizontal axis). If the graph is a straight line through the origin, it verifies Hooke’s law (force ∝ extension). The slope of the line gives the spring constant k (k = F/Δx)."
+  },
+  {
+       "id": 9,
+    "title": ":",
+    "question": "A load of 0.04 N causes an extension of 0.4 cm on a certain spring. Determine the load that will cause an extension of 0.6 cm on the same spring.",
+    "solution": "Hooke’s law: F ∝ x so F₁/x₁ = F₂/x₂.\nGiven F₁ = 0.04 N at x₁ = 0.4 cm. For x₂ = 0.6 cm, F₂ = F₁ × (x₂/x₁) = 0.04 × (0.6/0.4) = 0.04 × 1.5 = 0.06 N.\nTherefore the load required is 0.06 N.",
+    "working_steps": [
+      "Use proportionality: F₂ = 0.04 × (0.6 ÷ 0.4) = 0.06 N."
+    ]
+  },
+  {
+       "id": 10,
+    "title": ":",
+    "question": "An object is released into a eureka can full of water. It is observed that the weight of the displaced water is equal to the weight of the object. Explain this observation.",
+    "solution": "This is an application of Archimedes’ principle. When an object is placed in water it experiences an upward buoyant force equal to the weight of the fluid displaced. If the object floats (or is just supported by the water), the buoyant force balances the weight of the object. Thus the weight of the displaced water (which equals the buoyant force) is equal to the weight of the object."
+  },
+  {
+       "id": 11,
+    "title": ":",
+    "question": "A student observed that when removing a polyester sweater, a cracking sound was produced. Explain this observation.",
+    "solution": "Rubbing and separating polyester causes charge separation by the triboelectric effect so the sweater and the body become oppositely charged. When the separated surfaces suddenly discharge, a small spark and a cracking (sharp) sound are produced as air is ionised during the brief electric discharge."
+  },
+  {
+       "id": 12,
+    "title": ":",
+    "question": "Explain what happens to the potential difference of a charged parallel plate capacitor when the distance of separation between the plates is reduced.",
+    "solution": "If the capacitor is isolated so the charge Q is constant, reducing the plate separation decreases the electric field path so the potential difference V = Qd/(εA) is reduced (V ∝ d). If instead the capacitor remains connected to a fixed-voltage source (battery), the potential difference stays the same and charge on the plates changes."
+  },
+  {
+       "id": 13,
+    "title": ":",
+    "question": "A student is provided with a steel needle and a copper coin. Describe how the student can use a bar magnet to identify which of the two materials is magnetic.",
+    "solution": "Bring one end of the bar magnet close to the steel needle and observe attraction — steel (an iron alloy) will be attracted. Repeat with the copper coin; copper is non-magnetic and will not be attracted. Thus the object that is attracted by the magnet (the steel needle) is magnetic while the copper coin is not.",
+    "working_steps": [
+      "Hold the bar magnet near the needle — if it moves/attracts then it is magnetic.",
+      "Hold the same magnet near the coin — no attraction indicates non-magnetic."
+    ]
+  },
+  {
+       "id": 14,
+    "title": ":",
+    "question": "State what is meant by long sightedness as an eye defect.",
+    "solution": "Long-sightedness (hyperopia) is an eye defect in which a person can see distant objects clearly but has difficulty focusing on near objects because images of near objects are formed behind the retina (often due to a short eyeball or weak eye lens)."
+  },
+  {
+       "id": 15,
+    "title": ":",
+    "question": "Explain how long sightedness can be corrected using a lens.",
+    "solution": "Long-sightedness is corrected using a converging (convex) lens which causes incoming light rays from near objects to converge sooner so the image is formed on the retina rather than behind it, allowing clear near vision."
+  },
+  {
+       "id": 16,
+    "title": ":",
+    "question": "State three uses of the electron gun in the cathode ray oscilloscope.",
+    "solution": "Three uses of the electron gun are: (1) to produce (emit) a beam of electrons (the cathode ray), (2) to accelerate the electrons to the required speed, and (3) to control/focus and vary the intensity (brightness) of the electron beam so a visible spot/trace appears on the screen."
+  },
+  {
+       "id": 17,
+    "title": ":",
+    "question": "State the reason why the inner wall of a cathode ray oscilloscope tube is coated with graphite.",
+    "solution": "The inner wall is coated with graphite to provide a conductive surface that absorbs secondary electrons, prevents charge build-up, and ensures a uniform potential distribution inside the tube, improving beam stability and image quality."
+  },
+  {
+       "id": 18,
+    "title": ":",
+    "question": "Describe how a cathode ray oscilloscope can be used to measure the voltage of a cell.",
+    "solution": "Connect the cell to the vertical input (DC coupling) of the CRO. Switch off the time-base so the trace is stationary (or use very slow sweep). Adjust the vertical sensitivity (volts/div) until the deflection is clear. Count the number of vertical divisions the trace is displaced from the zero reference and multiply by the volts/div setting to get the cell voltage (V = divisions × volts/div).",
+    "working_steps": [
+      "Set CRO to DC coupling and turn off/slow time base for steady trace.",
+      "Connect cell to vertical input (observe polarity).",
+      "Measure vertical deflection in divisions and multiply by volts/div calibration."
+    ]
+  },
+  {
+       "id": 19,
+    "title": ":",
+    "question": "Use the energy band theory to explain why intrinsic semiconductors do not conduct at absolute zero temperature.",
+    "solution": "In intrinsic semiconductors all electrons occupy the valence band and the conduction band is empty at absolute zero. Because there is no thermal energy to excite electrons across the band gap into the conduction band, there are no free charge carriers and thus no electrical conduction at 0 K."
+  },
+  {
+       "id": 20,
+    "title": ":",
+    "question": "State the meaning of the term relative density.",
+    "solution": "Relative density (also called specific gravity) is the ratio of the density of a substance to the density of water (usually at 4°C). It is dimensionless: Relative density = (density of substance) / (density of water)."
+  },
+  {
+       "id": 21,
+    "title": ":",
+    "question": "State two areas of application of relative density in daily life.",
+    "solution": "Two applications: (1) Testing whether precious metals (e.g., gold) are genuine by comparing relative density, and (2) Checking the state of battery electrolyte (specific gravity) to determine battery charge and health."
+  },
+  {
+       "id": 22,
+    "title": ":",
+    "question": "A student blew air into a balloon, tied it up and released it into the air. It floated for some time but slowly descended to the ground and settled. Explain why the balloon settled on the ground.",
+    "solution": "The balloon initially floated because the average density of the balloon+enclosed warm air (or trapped lighter air) was less than the surrounding air, giving upward buoyant force. Over time the enclosed air cooled and/or slowly leaked through the balloon material, increasing its average density and reducing buoyant force until weight exceeded upthrust. As a result net force became downward and the balloon descended and settled.",
+    "working_steps": [
+      "Initial buoyancy > weight → balloon rises/ floats.",
+      "Cooling or gas loss → density increases → buoyant force reduces.",
+      "When buoyant force < weight → balloon descends."
+    ]
+  },
+  {
+       "id": 23,
+    "title": ":",
+    "question": "State two ways in which the balloon could be made to keep floating in the air.",
+    "solution": "Two ways: (1) Fill the balloon with a lighter-than-air gas such as helium so its average density stays lower than air, (2) increase the balloon volume or use better sealing/thicker material to reduce gas leakage and slow cooling (or continuously heat the air inside as in a hot-air balloon)."
+  },
+  {
+       "id": 24,
+    "title": ":",
+    "question": "A hollow metallic cube of volume 1000 cm³ is submerged in a liquid of density 1100 kg m⁻³. Determine the upthrust acting on it. (take g = 10 N kg⁻¹)",
+    "solution": "Volume = 1000 cm³ = 1000 × 10⁻⁶ m³ = 1.0 × 10⁻³ m³. Upthrust = ρ V g = 1100 × 1.0×10⁻³ × 10 = 11 N. The upthrust acting on the cube is 11 N.",
+    "working_steps": [
+      "Convert volume to m³: 1000 cm³ = 1.0×10⁻³ m³.",
+      "Compute upthrust: 1100 × 1.0×10⁻³ × 10 = 11 N."
+    ]
+  },
+  {
+       "id": 25,
+    "title": ":",
+    "question": "A stone of mass 0.02 kg tied at the end of a spring is whirled in a vertical circle of radius 1.0 m. Determine the minimum velocity required for the stone to maintain circular motion. (g = 10 m s⁻²).",
+    "solution": "Minimum speed at the top to keep the string taut requires centripetal force ≥ weight: (m v²)/r ≥ mg → v² ≥ rg → v_min = √(r g) = √(1.0 × 10) = √10 ≈ 3.16 m/s. So minimum speed ≈ 3.16 m/s.",
+    "working_steps": [
+      "Set m v² / r = m g → v² = r g → v = √(r g).",
+      "Compute v = √(1 × 10) ≈ 3.16 m/s."
+    ]
+  },
+  {
+       "id": 26,
+    "title": ":",
+    "question": "State two applications of centripetal force.",
+    "solution": "Two applications: (1) Keeping a car on a curved road — friction provides the centripetal force that allows the car to follow the curve, (2) The motion of satellites and planets — gravitational force supplies the centripetal force needed for orbital motion."
+  }
+]}
+

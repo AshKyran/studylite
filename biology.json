@@ -1,0 +1,189 @@
+{
+  "subject": "Biology",
+  "paper": "Paper 1&2",
+  "source": "StudyLite Kenya",
+  "metadata": {
+    "type": "theoretical",
+    "description": "Sample biology study questions.",
+    "level": "KCSE",
+    "last_updated": "2025-10-08"
+  },
+  "questions": [
+  {
+    "id": 1,
+    "title": ":",
+    "question": "(a) Name the Kingdom whose members are all microscopic.",
+    "solution": "The Kingdom is Monera. All its members are microscopic and include bacteria and blue-green algae (cyanobacteria).",
+    "choices": ["Monera", "Protista", "Fungi", "Plantae"],
+    "correct": "Monera"
+  },
+  {
+    "id": 2,
+    "title": ":",
+    "question": "(b) State two diseases caused by organisms belonging to the Kingdom named in 1(a).",
+    "solution": "Diseases caused by members of Kingdom Monera include: (i) Tuberculosis (caused by Mycobacterium tuberculosis) (ii) Cholera (caused by Vibrio cholerae).",
+    "working_steps": [
+      "Identify common bacterial diseases in humans.",
+      "Relate them to the causative bacterial organisms."
+    ]
+  },
+  {
+    "id": 3,
+    "title": ":",
+    "question": "During a microscopy practical, the following materials were provided: a temporary mount of an onion epidermis and a transparent ruler. State the aim of the experiment.",
+    "solution": "The aim of the experiment is to determine the size of a cell using a light microscope and a transparent ruler."
+  },
+  {
+    "id": 4,
+    "title": ":",
+    "question": "Explain how the aim stated in 3(a) can be achieved.",
+    "solution": "By viewing the onion epidermal cells under the microscope, measuring the diameter of the field of view using the transparent ruler, and estimating the number of cells across the field to calculate the approximate size of one cell.",
+    "working_steps": [
+      "Focus the microscope on the onion epidermis to view cells clearly.",
+      "Place the transparent ruler on the stage and measure the field of view in millimeters.",
+      "Count the number of cells across the field of view.",
+      "Divide the field diameter by the number of cells to obtain the average cell size."
+    ]
+  },
+  {
+    "id": 5,
+    "title": ":",
+    "question": "Name two components of blood that are absent in the tissue fluid.",
+    "solution": "The two components of blood absent in tissue fluid are red blood cells (erythrocytes) and plasma proteins."
+  },
+  {
+    "id": 6,
+    "title": ":",
+    "question": "Name the structures in plants through which the processes of transpiration and guttation occur.",
+    "solution": "Transpiration occurs through stomata, lenticels, and cuticle. Guttation occurs through hydathodes.",
+    "working_steps": [
+      "a) Transpiration – Stomata, lenticels, cuticle.",
+      "b) Guttation – Hydathodes."
+    ]
+  },
+  {
+    "id": 7,
+    "title": ":",
+    "question": "Name two Classes of the Phylum Arthropoda that have a cephalothorax.",
+    "solution": "Two classes of Arthropoda that have a cephalothorax are Crustacea (e.g., crayfish) and Arachnida (e.g., spider)."
+  },
+  {
+    "id": 8,
+    "title": ":",
+    "question": "Name the source of hydrochloric acid in the human alimentary canal.",
+    "solution": "Hydrochloric acid is secreted by the oxyntic (parietal) cells of the stomach wall."
+  },
+  {
+    "id": 9,
+    "title": ":",
+    "question": "Name one blood disorder caused by gene mutation.",
+    "solution": "Sickle cell anaemia is a blood disorder caused by a gene mutation in the haemoglobin gene."
+  },
+  {
+    "id": 10,
+    "title": ":",
+    "question": "Name the stage in meiosis where each of the following processes occur: (i) formation of spindle fibres; (ii) disappearance of nucleolus.",
+    "solution": "(i) Formation of spindle fibres occurs during Prophase I. (ii) Disappearance of nucleolus also occurs during Prophase I."
+  },
+  {
+    "id": 11,
+    "title": ":",
+    "question": "How do the following structural modifications in plants minimize the rate of water loss? (a) Leaf folding. (b) Sunken stomata.",
+    "solution": "(a) Leaf folding reduces the surface area exposed to direct sunlight and wind, lowering water loss through transpiration. (b) Sunken stomata trap a layer of moist air around the pores, reducing the water vapour gradient and hence lowering transpiration rate."
+  },
+  {
+    "id": 12,
+    "title": ":",
+    "question": "State two reasons for the absence of complex excretory organs in plants.",
+    "solution": "Plants lack complex excretory organs because: (i) They produce little toxic nitrogenous waste, as most waste products are re-used. (ii) Waste products like oxygen and carbon dioxide can easily diffuse out through stomata and lenticels."
+  },
+  {
+    "id": 13,
+    "title": ":",
+    "question": "11. The following word equation represents a biological process that occurs in green plants.\nCarbon (IV) oxide + water ⇾ Glucose + Product E\n(a) Name the cell organelle where the illustrated process takes place in green plants.\n(b) Give the likely identity of product E.\n(c) Suggest ways in which the rate of production of E can be increased.\n(d) Suggest one possible source of carbon (IV) oxide if the above process was artificially conducted in a school laboratory.\n(e) Explain how the illustrated process is significant in nature.",
+    "solution": "(a) Chloroplast.\n(b) Product E is oxygen (O₂).\n(c) Rate of production of oxygen can be increased by: increasing light intensity; increasing carbon (IV) oxide concentration; providing optimal temperature (to a point) and ensuring adequate water supply; increasing the leaf surface area or chlorophyll content.\n(d) A suitable source of CO₂ in the school laboratory is a solution of sodium hydrogen carbonate (sodium bicarbonate) or by exhaling into the setup (or using dilute hydrochloric acid on sodium carbonate to release CO₂).\n(e) Photosynthesis is significant because it produces glucose which serves as food and chemical energy for plants and for consumers in food chains, releases oxygen necessary for aerobic respiration, and removes CO₂ from the atmosphere helping to regulate climate and the carbon cycle.",
+    "working_steps": [
+      "Identify organelle where chlorophyll is present (chloroplast).",
+      "Recognise that photosynthesis produces O₂ as a by-product.",
+      "List environmental factors that increase photosynthetic rate.",
+      "Give common laboratory methods for supplying CO₂ (e.g., NaHCO₃).",
+      "Summarise ecological roles: food production, O₂ supply, CO₂ removal."
+    ]
+  },
+  {
+    "id": 14,
+    "title": ":",
+    "question": "12. In an experiment, the number of red blood cells present in three samples of blood labelled F, G and H was estimated. Different concentrations of salt solution were separately added to the samples. After an hour, the number of red blood cells present in each sample was counted and recorded as shown below:\n\nSample F — Salt solution % concentration added: 1.0 — Number of red blood cells: Number remained the same\nSample G — Salt solution % concentration added: 0.6 — Number of red blood cells: Fewer cells observed\nSample H — Salt solution % concentration added: 0.4 — Number of red blood cells: No cells observed\n\n(a) Name the physiological process being investigated in the experiment.\n(b) Account for the results made in blood sample F.\n(c) Account for the difference in appearance of red blood cells in samples F and G at the end of the experiment.\n(d) With a reason, predict the possible observation that would be made if blood sample F was treated with a salt concentration of 2.6%.\n(e) State the importance of the process being investigated above during urine formation.",
+    "solution": "(a) Osmosis across the red blood cell membrane (osmosis/tonicity effects leading to haemolysis or crenation).\n(b) In sample F (1.0%) the solution is approximately isotonic to the cytoplasm of the red blood cells so there is no net movement of water; cells remain intact and their number remains the same.\n(c) In sample G (0.6%) the solution is hypotonic relative to red blood cells so water enters the cells by osmosis; many cells swell and burst (haemolyse) so fewer intact cells are observed compared with F where cells remain unchanged.\n(d) If sample F were treated with 2.6% salt (a strongly hypertonic solution) red blood cells would lose water and shrink (crenate). Observation: cells appear shrunken/crenated (they do not swell); their shape changes though they remain present as shrunken cells.\n(e) Importance during urine formation: osmosis is essential for reabsorption of water from kidney tubules (particularly in the proximal tubule and collecting duct) and for concentrating urine in the loop of Henle; it helps regulate body water balance and produce urine of appropriate concentration.",
+    "working_steps": [
+      "Recognise changes in cell counts relate to net water movement due to solute concentration differences.",
+      "Isotonic -> no net movement; hypotonic -> water in -> swelling/lysis; hypertonic -> water out -> shrinkage.",
+      "Relate kidney function to selective reabsorption of water via osmosis."
+    ]
+  },
+  {
+    "id": 15,
+    "title": ":",
+    "question": "13. State the significance of each of the following characteristics in mammalian gaseous exchange structures and surfaces.\n(a) Presence of rings of cartilage in the trachea.\n(b) Numerous blood capillaries lining the lungs.",
+    "solution": "(a) Rings of cartilage keep the trachea open (prevent collapse) so that air can pass freely to and from the lungs; they also allow flexibility during breathing and swallowing.\n(b) Numerous blood capillaries provide a large surface area and short diffusion distance for rapid exchange of oxygen and carbon (IV) oxide between alveolar air and blood; they also ensure quick transport of gases to and from body tissues."
+  },
+  {
+    "id": 16,
+    "title": ":",
+    "question": "14. (a) What is the most appropriate method of estimating the population of black ants in a school playing field?\n(b) Why are shorter food chains advantageous in an ecosystem?",
+    "solution": "(a) Capture-mark-recapture (mark, release, then recapture and use the ratio to estimate total population) or systematic quadrat sampling and extrapolation; capture-mark-recapture is commonly used for mobile insect populations because it accounts for movement and gives a population estimate.\n(b) Shorter food chains are advantageous because they conserve more energy (less energy lost at each trophic transfer), support greater biomass at higher trophic levels, and reduce the chance of energy depletion and buildup of toxins — making ecosystems more efficient and often more stable for top consumers.",
+    "working_steps": [
+      "Explain the method chosen (mark-release-recapture steps) or quadrat sampling principle.",
+      "Give reasons why fewer trophic transfers conserve energy and reduce losses."
+    ]
+  },
+  {
+    "id": 17,
+    "title": ":",
+    "question": "15. (a) Using an example, define convergent evolution.\n(b) Explain how natural selection is advantageous to living organisms.",
+    "solution": "(a) Convergent evolution is the process where unrelated organisms independently evolve similar structures or functions because they live in similar environments or face similar selective pressures. Example: the streamlined body shape of sharks (fish) and dolphins (mammal) — analogous features that evolved independently.\n(b) Natural selection is advantageous because it increases the frequency of beneficial traits that improve survival and reproductive success in a given environment. Over generations organisms become better adapted to their environment, increasing their chances of surviving, reproducing and passing on advantageous genes to offspring.",
+    "working_steps": [
+      "Define the concept clearly and give a concrete example of analogous structures.",
+      "Describe the mechanism of selection: variation -> differential survival -> inheritance -> increased adaptation."
+    ]
+  },
+  {
+    "id": 18,
+    "title": ":",
+    "question": "16. (a)(i) Name the blood vessel that carries oxygenated blood from the heart to the rest of the body tissues.\n(ii) State the role of the tricuspid valve in the mammalian heart.\n(b) Why are people with blood group O referred to as universal donors?",
+    "solution": "(a)(i) The aorta.\n(ii) The tricuspid valve (between right atrium and right ventricle) prevents backflow of blood from the right ventricle into the right atrium during ventricular contraction (systole), ensuring one-way flow.\n(b) People with blood group O are called universal donors because their red blood cells lack A and B antigens on the cell surface, so their donated RBCs are less likely to be attacked by anti-A or anti-B antibodies in recipients of other blood groups. (Note: for whole blood transfusion plasma antibodies matter; in practice O negative RBCs are the safest emergency donors.)"
+  },
+  {
+    "id": 19,
+    "title": ":",
+    "question": "17. The following word equation represents a metabolic reaction taking place in an animal tissue.\nGlucose → Lactic acid + Energy\n(a) State the condition under which the reaction occurs.\n(b) How does the size of an animal affect the rate of respiration?",
+    "solution": "(a) The reaction occurs under anaerobic conditions (when oxygen supply is insufficient) — anaerobic respiration/fermentation.\n(b) Small animals usually have a larger surface-area-to-volume ratio than large animals; this means they lose heat more quickly and therefore have higher metabolic and respiratory rates per unit mass to maintain body temperature. Conversely, larger animals have a smaller surface-area-to-volume ratio and generally lower metabolic rate per unit mass."
+  },
+  {
+    "id": 20,
+    "title": ":",
+    "question": "18. (a) How can sexual reproduction in organisms lead to the evolution of new species?\n(b) State the role of continuous variation in evolution.",
+    "solution": "(a) Sexual reproduction produces genetic variation in offspring through recombination of parental genes (independent assortment and crossing over) and by introducing new gene combinations. This variation provides raw material for natural selection; over long periods, isolated populations with different selected traits may diverge reproductively and form new species (speciation).\n(b) Continuous variation provides a range of phenotypes on which natural selection can act; gradual shifts in the distribution of these traits in response to environmental pressures enable populations to adapt continuously and can lead to evolutionary change over time.",
+    "working_steps": [
+      "Describe mechanisms generating variation in sexual reproduction (meiosis, fertilisation).",
+      "Explain how selection acts on variation to produce divergence and eventually speciation."
+    ]
+  },
+  {
+    "id": 21,
+    "title": ":",
+    "question": "19. (a) Explain the effects of hypothyroidism in adults.\n(b) Describe the hearing process in humans.",
+    "solution": "(a) Effects of hypothyroidism in adults include: reduced metabolic rate leading to fatigue and lethargy; weight gain; cold intolerance; slow heart rate (bradycardia); dry, coarse skin; constipation; mental sluggishness or depression; and sometimes enlargement of the thyroid gland (goitre) if due to iodine deficiency.\n(b) Hearing process: Sound waves are collected by the pinna (external ear) and travel down the ear canal to vibrate the tympanic membrane (eardrum). Vibrations are transmitted by the ossicles (malleus, incus, stapes) which amplify the sound and pass vibrations to the oval window of the cochlea. Movements of the oval window create pressure waves in the fluid (perilymph/endolymph) of the cochlea, causing the basilar membrane to move. Hair cells on the organ of Corti bend and convert mechanical vibration into nerve impulses, which travel along the auditory (cochlear) nerve to the brain where they are interpreted as sound."
+  },
+  {
+    "id": 22,
+    "title": ":",
+    "question": "20. (a) Describe how urea is formed in humans.\n(b) Describe the path followed by urea from the site of formation until it is eliminated from the body.",
+    "solution": "(a) Urea formation occurs mainly in the liver. Amino acids from protein digestion undergo deamination (removal of the amino group) producing ammonia (NH₃), which is toxic. In the liver, ammonia is converted to urea via the ornithine (urea) cycle: ammonia reacts with carbon (IV) oxide (CO₂) and other intermediates to form urea (a less toxic, soluble compound).\n(b) Path of urea: urea formed in the liver enters the blood plasma → transported in the blood to the kidneys → filtered out of the blood at the glomerulus into the Bowman’s capsule → passes through the renal tubules (some water may be reabsorbed) → collects in the renal pelvis → transported by the ureter to the urinary bladder where urine is stored → expelled from the body through the urethra during urination.",
+    "working_steps": [
+      "Explain deamination and conversion of ammonia to urea (simple description of urea cycle).",
+      "Trace urea movement: liver → blood → kidney filtration → ureter → bladder → urethra."
+    ]
+  }]
+}
+
