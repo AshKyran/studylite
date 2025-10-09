@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://ashkyran.github.io/studylite/</loc>
+    <loc>https://www.studylite.online/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://ashkyran.github.io/studylite/math.html</loc>
+    <loc>https://www.studylite.online/math.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ashkyran.github.io/studylite/chemistry.html</loc>
+    <loc>https://www.studylite.online/chemistry.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ashkyran.github.io/studylite/bio.html</loc>
+    <loc>https://www.studylite.online/bio.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -26,27 +26,27 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ashkyran.github.io/studylite/comp.html</loc>
+    <loc>https://www.studylite.online/studylite/comp.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ashkyran.github.io/studylite/about.html</loc>
+    <loc>https://www.studylite.online/about.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ashkyran.github.io/studylite/contact.html</loc>
+    <loc>https://www.studylite.online/contact.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://ashkyran.github.io/studylite/privacy.html</loc>
+    <loc>https://www.studylite.online/privacy.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://ashkyran.github.io/studylite/terms.html</loc>
+    <loc>https://www.studylite.online/terms.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
