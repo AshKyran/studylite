@@ -8,4 +8,4 @@ Disallow: /LICENSE
 Disallow: /CNAME
 
 # Include your sitemap for faster discovery
-Sitemap: https://ashkyran.github.io/studylite/sitemap.xml
+Sitemap: https://www.studylite.online/sitemap.xml
