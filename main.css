@@ -1,7 +1,3 @@
-/* assets/css/main.css
-   Global styling for StudyLite - mobile-first, responsive
-*/
-
 :root{
   --bg: #f6f7fb;
   --card: #ffffff;
@@ -22,12 +18,14 @@ body{
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
   line-height:1.45;
+  font-size:16px;
 }
 
 .wrap{
-  max-width: 80%;
+  max-width: var(--maxw);
   margin: 16px auto;
   padding: 0 14px;
+  width: calc(100% - 28px);
 }
 
 /* Header */
@@ -57,12 +55,12 @@ nav a.active {
 
 /* Cards & general */
 .card{
-  background:rgb(240, 240, 240);
+  background:var(--card);
   padding: 14px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   margin-bottom: 14px;
-  color: black;
+  color: #0b1726;
 }
 /* Hero */
 .hero-inner{display:flex;gap:12px;align-items:center;justify-content:space-between}
@@ -85,6 +83,7 @@ nav a.active {
   cursor:pointer;
   font-weight:600;
   border:0;
+  font-size:15px;
 }
 .btn.primary{background:var(--accent);color:#fff}
 .btn.ghost{background:transparent;border:1px solid #e6eefc;color:var(--accent)}
@@ -126,15 +125,20 @@ nav a.active {
 /* Utilities */
 .hidden{display:none}
 
-/* Responsive rules */
+/* Responsive rules (keeps your original breakpoints and behavior) */
 @media (max-width: 880px){
   .subject-wrap{flex-direction:column}
   .side-col{flex-basis:auto}
   .header-inner{flex-direction:column;align-items:flex-start;gap:8px}
   .hero-inner{flex-direction:column;align-items:flex-start}
   .topnav{display:none}
+  /* reduce hero visual on very small screens so it doesn't dominate */
+  .hero-visual img{max-width:160px}
+  /* keep buttons usable on small screens */
+  .btn{padding:9px 10px;font-size:14px}
 }
-/* Solution modal (add to main.css or subject.css) */
+
+/* Solution modal (kept same as your original, slightly tuned) */
 .studylite-modal-overlay {
   position: fixed;
   inset: 0;
@@ -245,3 +249,21 @@ nav a.active {
   width: 100%;
   min-height: 0; /* prevents huge blank space when ad fails */
 }
+
+/* Subject-level tweaks (kept in same file for simplicity) */
+.subject-header h2 { margin: 0 0 6px; font-size: 20px; }
+.subject-header .muted { color: var(--muted); }
+
+@media (max-width:720px){
+  .payment-card .btn { width: 100%; margin-bottom: 8px; }
+}
+
+.notes-list .note { font-size: 15px; }
+
+.ad-card { border: 1px solid #eee; border-radius: 12px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin: 15px auto; text-align: center; max-width: 320px; }
+
+/* Prevent accidental horizontal overflow */
+html,body{overflow-x:hidden}
+
+/* small accessibility tweak */
+a:focus-visible,button:focus-visible{outline:3px solid rgba(11,110,237,0.16);outline-offset:2px}
