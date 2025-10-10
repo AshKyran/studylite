@@ -229,6 +229,7 @@ nav a.active {
   #question-list { max-height: 48vh; }
   .wrap {width: 100%}
   .wrap {margin: 5px auto;}
+  .wrap {padding: 0 5px;}
 }
 
 .purchase-overlay {
