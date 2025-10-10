@@ -154,7 +154,7 @@
         <h3>Premium feature</h3>
         <p>This note is available only in the full StudyLite package.</p>
         <p><strong>Till Number:</strong> 8996560</p>
-        <a class="btn primary" href="https://wa.me/2547XXXXXXX" target="_blank">Contact via WhatsApp</a><br><br>
+        <a class="btn primary" href="https://wa.me/254746394674" target="_blank">Contact via WhatsApp</a><br><br>
         <button id="close-purchase" class="btn ghost">Close</button>
         </div>
         `;
