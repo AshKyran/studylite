@@ -128,7 +128,7 @@ function showHome(){
 function safeFillPaymentBlock(){
   const p = el('payment-block');
   const till = PAYMENT_DETAILS.tillNumber || '8996560';
-  const wa = PAYMENT_DETAILS.contactWhatsApp || '';
+  const wa = PAYMENT_DETAILS.contactWhatsApp || '+254746394674';
   if(p){
     p.innerHTML = `
       <div><strong>Till / Paybill:</strong> <span id="display-till">${till}</span></div>
@@ -174,7 +174,7 @@ window.addEventListener('DOMContentLoaded', () => {
       <p>Buy <strong>quality StudyLite notes</strong> and <strong>past-KCSE questions with answers</strong>.</p>
       <p style="margin-top:0.5em;">Only <strong>Ksh 150</strong> per set (50 questions & answers).</p>
       <p><strong>Till / Paybill:</strong> 8996560</p>
-      <a class="btn primary" href="https://wa.me/2547XXXXXXX" target="_blank">Buy via WhatsApp</a><br><br>
+      <a class="btn primary" href="https://wa.me/254746394674" target="_blank">Buy via WhatsApp</a><br><br>
       <button id="close-purchase" class="btn ghost">Close</button>
     </div>
   `;
