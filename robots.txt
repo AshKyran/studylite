@@ -1,11 +1,7 @@
-# Allow all search engines to crawl the site
 User-agent: *
-Disallow:
-
-# Prevent GitHub system files and Markdown docs from being indexed
+Allow: /
 Disallow: /README.md
 Disallow: /LICENSE
 Disallow: /CNAME
 
-# Include your sitemap for faster discovery
 Sitemap: https://www.studylite.online/sitemap.xml
