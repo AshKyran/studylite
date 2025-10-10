@@ -3,7 +3,7 @@
 const PAYMENT_DETAILS = {
   tillNumber: "8996560",
   paybill: "",
-  contactWhatsApp: "+2547XXXXXXXX",
+  contactWhatsApp: "+254746394674",
   contactEmail: "denismutuginjagi@gmail.com",
   selarLink: ""
 };
