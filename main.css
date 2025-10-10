@@ -227,6 +227,7 @@ nav a.active {
 /* Smaller screens: reduce max height so the modal/area doesn't dominate */
 @media (max-width: 640px) {
   #question-list { max-height: 48vh; }
+  .wrap {width: 100%}
 }
 
 .purchase-overlay {
