@@ -2,7 +2,13 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+
+// Recreate the Transaction type safely to avoid the missing namespace export error
+type TransactionClient = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
 
 export async function POST(req: Request) {
   try {
@@ -49,8 +55,8 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // 4. Database Transaction: Create User AND Wallet together
-    // Using Prisma.TransactionClient to satisfy strict Next.js build rules
-    const newUser = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    // Using our custom TransactionClient type to satisfy Next.js strict builds
+    const newUser = await prisma.$transaction(async (tx: TransactionClient) => {
       const user = await tx.user.create({
         data: {
           email,
