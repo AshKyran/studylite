@@ -4,125 +4,158 @@ import { redirect } from "next/navigation";
 import { jwtVerify } from "jose";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import LogoutButton from "@/components/LogoutButton";
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret";
 const encodedKey = new TextEncoder().encode(JWT_SECRET);
 
-export default async function DashboardPage() {
+export default async function DashboardOverview() {
+  // 1. Verify Session
   const cookieStore = await cookies();
   const token = cookieStore.get("studylite_session")?.value;
 
-  if (!token) {
-    redirect("/login");
-  }
+  if (!token) redirect("/login");
 
-  let sessionData;
-
+  let userId: string;
   try {
     const { payload } = await jwtVerify(token, encodedKey);
-    sessionData = payload;
+    userId = payload.id as string;
   } catch (error) {
     redirect("/login");
   }
 
-  // Fetch the user, their wallet, AND order their created notes by newest first
-  const user = await prisma.user.findUnique({
-    where: { id: sessionData.id as string },
-    include: { 
-      wallet: true,
-      notesCreated: {
-        orderBy: { createdAt: 'desc' }
-      }
-    },
-  });
+  // 2. Fetch User Data Concurrently for Maximum Performance
+  const [user, recentPurchases, myUploads] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      include: { wallet: true },
+    }),
+    prisma.note.findMany({
+      where: { purchasers: { some: { id: userId } } },
+      orderBy: { createdAt: "desc" },
+      take: 3, // Only show the 3 most recent
+      include: { subject: { select: { name: true } } },
+    }),
+    prisma.note.findMany({
+      where: { authorId: userId },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+    }),
+  ]);
 
-  if (!user) {
-    redirect("/login");
-  }
+  if (!user) redirect("/login");
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto space-y-8">
-        
-        {/* Header Section */}
-        <div className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Welcome back, {user.firstName}!
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              You are signed in as a <span className="font-semibold text-blue-600">{user.role}</span>
-              {/* Added a Verified badge if they are an approved Tutor/Researcher */}
-              {user.isVerified && (
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                  Verified
-                </span>
-              )}
-            </p>
+    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+      
+      {/* Welcome Header */}
+      <div>
+        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
+          Welcome back, {user.firstName}
+        </h1>
+        <p className="text-gray-500 mt-1">Here is what is happening with your account today.</p>
+      </div>
+
+      {/* Top Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Wallet Stat */}
+        <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-medium text-gray-500">Wallet Balance</h2>
+            <span className="text-blue-600 bg-blue-50 p-2 rounded-lg">💳</span>
           </div>
-          
-          <LogoutButton />
+          <div className="flex items-baseline space-x-1">
+            <span className="text-sm font-semibold text-gray-600">KES</span>
+            <span className="text-3xl font-extrabold text-gray-900">
+              {user.wallet?.balance.toFixed(2) || "0.00"}
+            </span>
+          </div>
+          <Link href="/dashboard/wallet" className="text-sm text-blue-600 font-medium mt-4 hover:underline">
+            Top up funds →
+          </Link>
         </div>
 
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* Wallet Card */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
-            <div>
-              <h2 className="text-sm font-medium text-gray-500">Available Balance</h2>
-              <p className="text-4xl font-extrabold text-gray-900 mt-2">
-                KES {user.wallet?.balance.toFixed(2) || "0.00"}
-              </p>
-            </div>
-            <button className="mt-6 w-full rounded-lg bg-blue-50 py-2 px-4 text-sm font-semibold text-blue-700 hover:bg-blue-100 transition">
-              Withdraw Funds
-            </button>
+        {/* Library Stat */}
+        <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-medium text-gray-500">Materials Owned</h2>
+            <span className="text-green-600 bg-green-50 p-2 rounded-lg">📚</span>
           </div>
+          <div className="text-3xl font-extrabold text-gray-900">
+            {recentPurchases.length > 0 ? recentPurchases.length : "0"}
+          </div>
+          <Link href="/dashboard/library" className="text-sm text-blue-600 font-medium mt-4 hover:underline">
+            View library →
+          </Link>
+        </div>
 
-          {/* Uploaded Notes Section */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Your Study Materials</h2>
-              <Link 
-                href="/dashboard/upload" 
-                className="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-md transition"
-              >
-                + Upload New
-              </Link>
-            </div>
+        {/* Uploads Stat */}
+        <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-medium text-gray-500">Materials Uploaded</h2>
+            <span className="text-purple-600 bg-purple-50 p-2 rounded-lg">📤</span>
+          </div>
+          <div className="text-3xl font-extrabold text-gray-900">
+            {myUploads.length}
+          </div>
+          <Link href="/dashboard/upload" className="text-sm text-blue-600 font-medium mt-4 hover:underline">
+            Upload new →
+          </Link>
+        </div>
+      </div>
 
-            {/* Check if they have any notes, if not, show the empty state */}
-            {user.notesCreated.length === 0 ? (
-              <div className="mt-4 flex flex-col items-center justify-center h-32 border-2 border-dashed border-gray-200 rounded-lg">
-                <p className="text-sm text-gray-500">You haven't uploaded any notes yet.</p>
-              </div>
+      {/* Bottom Row: Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        {/* Recent Purchases List */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h3 className="font-bold text-gray-900">Recent Additions</h3>
+          </div>
+          <div className="divide-y divide-gray-100 p-2">
+            {recentPurchases.length === 0 ? (
+              <p className="p-4 text-sm text-gray-500 text-center">No materials purchased yet.</p>
             ) : (
-              <div className="mt-4 space-y-4 max-h-[400px] overflow-y-auto pr-2">
-                {user.notesCreated.map((note) => (
-                  <div key={note.id} className="flex justify-between items-center p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-900">{note.title}</h3>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {note.level.replace("_", " ")} • KES {note.price.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="text-right flex items-center space-x-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${note.isPublished ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                        {note.isPublished ? 'Published' : 'Draft'}
-                      </span>
-                      <a href={note.contentUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800">
-                        View
-                      </a>
-                    </div>
+              recentPurchases.map((note) => (
+                <div key={note.id} className="p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors">
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm line-clamp-1">{note.title}</p>
+                    <p className="text-xs text-gray-500 mt-1">{note.subject.name}</p>
                   </div>
-                ))}
-              </div>
+                  <a href={note.contentUrl} target="_blank" rel="noreferrer" className="text-sm font-medium text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-md">
+                    Open
+                  </a>
+                </div>
+              ))
             )}
           </div>
-          
         </div>
+
+        {/* Your Uploads List */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h3 className="font-bold text-gray-900">Your Uploads</h3>
+          </div>
+          <div className="divide-y divide-gray-100 p-2">
+            {myUploads.length === 0 ? (
+              <p className="p-4 text-sm text-gray-500 text-center">You haven&apos;t uploaded anything yet.</p>
+            ) : (
+              myUploads.map((note) => (
+                <div key={note.id} className="p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors">
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm line-clamp-1">{note.title}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {note.isPublished ? "🟢 Published" : "🟡 Draft"} • KES {note.price}
+                    </p>
+                  </div>
+                  <Link href={`/explore/${note.id}`} className="text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-1.5 rounded-md">
+                    View
+                  </Link>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );
