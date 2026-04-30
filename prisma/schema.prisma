@@ -1,0 +1,106 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums for strict data validation
+enum Role {
+  STUDENT
+  TUTOR
+  RESEARCHER
+  ADMIN
+}
+
+enum EducationLevel {
+  HIGH_SCHOOL
+  COLLEGE
+  GENERAL
+}
+
+// Core User Model
+model User {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  role          Role       @default(STUDENT)
+  isVerified    Boolean    @default(false) // Gives Tutors/Researchers the "Verified" badge
+  
+  // Relations
+  wallet        Wallet?
+  notesCreated  Note[]     @relation("AuthorNotes")
+  purchases     Purchase[]
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([email])
+}
+
+// Wallet for Paystack/M-Pesa micro-transactions
+model Wallet {
+  id        String   @id @default(uuid())
+  balance   Float    @default(0.0) // Balance stored in KES
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Subject Categories (e.g., "Biology", "Calculus II")
+model Subject {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  notes       Note[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// The core learning material (Notes/Research/Videos)
+model Note {
+  id          String         @id @default(uuid())
+  title       String
+  description String
+  contentUrl  String         // AWS S3 or Supabase Storage URL for the actual PDF/Video
+  price       Float          @default(0.0) // 0.0 means Free Tier
+  level       EducationLevel
+  isPublished Boolean        @default(false)
+  
+  // Relations
+  authorId    String
+  author      User           @relation("AuthorNotes", fields: [authorId], references: [id], onDelete: Restrict)
+  subjectId   String
+  subject     Subject        @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  purchases   Purchase[]
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([subjectId])
+  @@index([authorId])
+}
+
+// Ledger to track who bought what (and calculate creator revenue shares)
+model Purchase {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  noteId    String
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Restrict)
+  amount    Float    // Locked price at the time of purchase
+  
+  createdAt DateTime @default(now())
+
+  // Critical: Prevents a user from accidentally purchasing the same note twice
+  @@unique([userId, noteId]) 
+}
