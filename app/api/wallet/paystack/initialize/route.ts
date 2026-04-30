@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // 2. Authentication & Session Verification
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("studylite_session")?.value;
 
     if (!token) {
