@@ -36,11 +36,14 @@ model User {
   wallet        Wallet?
   notesCreated  Note[]     @relation("AuthorNotes")
   purchases     Purchase[]
+  purchasedNotes Note[] @relation("UserPurchases")
   
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
+  
 
   @@index([email])
+  
 }
 
 // Wallet for Paystack/M-Pesa micro-transactions
@@ -81,6 +84,7 @@ model Note {
   subjectId   String
   subject     Subject        @relation(fields: [subjectId], references: [id], onDelete: Restrict)
   purchases   Purchase[]
+  purchasers User[] @relation("UserPurchases")
   
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
