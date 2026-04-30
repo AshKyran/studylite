@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { jwtVerify } from "jose";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
+import LogoutButton from "@/components/LogoutButton";
 
 // Pull the secret key from the environment
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret";
@@ -56,12 +57,8 @@ export default async function DashboardPage() {
           </div>
           
           {/* Quick Logout (We will build a proper logout API later, this just clears the cookie visually for now if they clear cache, but a real logout button is best) */}
-          <Link 
-            href="/" 
-            className="text-sm font-medium text-gray-500 hover:text-gray-900 transition"
-          >
-            Go to Homepage
-          </Link>
+          {/* Quick Logout */}
+        <LogoutButton />
         </div>
 
         {/* Dashboard Grid */}
