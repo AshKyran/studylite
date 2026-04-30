@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export async function POST(req: Request) {
   try {
@@ -48,8 +49,8 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // 4. Database Transaction: Create User AND Wallet together
-    // If wallet creation fails for any reason, the user creation rolls back automatically.
-    const newUser = await prisma.$transaction(async (tx) => {
+    // Using Prisma.TransactionClient to satisfy strict Next.js build rules
+    const newUser = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const user = await tx.user.create({
         data: {
           email,
