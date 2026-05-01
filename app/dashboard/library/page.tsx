@@ -1,33 +1,22 @@
-// app/dashboard/library/page.tsx
-import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
+import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
-import { jwtVerify } from "jose";
-import prisma from "@/lib/prisma";
 import Link from "next/link";
 
-const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret";
-const encodedKey = new TextEncoder().encode(JWT_SECRET);
+const prisma = new PrismaClient();
 
 export default async function LibraryPage() {
-  // 1. Authenticate User
-  const cookieStore = await cookies();
-  const token = cookieStore.get("studylite_session")?.value;
+  // 1. Authenticate User via Supabase
+  const supabase = await createClient();
+  const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
 
-  if (!token) {
-    redirect("/login");
-  }
-
-  let sessionData;
-  try {
-    const { payload } = await jwtVerify(token, encodedKey);
-    sessionData = payload;
-  } catch (error) {
+  if (authError || !authUser) {
     redirect("/login");
   }
 
   // 2. Fetch the user's purchased notes with Author and Subject details
   const user = await prisma.user.findUnique({
-    where: { id: sessionData.id as string },
+    where: { id: authUser.id },
     include: {
       purchasedNotes: {
         include: {
@@ -39,7 +28,7 @@ export default async function LibraryPage() {
           },
         },
         orderBy: {
-          createdAt: "desc", // Assuming you want newest notes first, though a custom join table with 'purchasedAt' is better for true chronological sorting
+          createdAt: "desc", 
         },
       },
     },
@@ -49,76 +38,96 @@ export default async function LibraryPage() {
     redirect("/login");
   }
 
+  // 3. Generate Secure, Expiring Download Links (Signed URLs)
+  // We map over the purchased notes and securely ask Supabase for a 1-hour access link
+  const notesWithSecureLinks = await Promise.all(
+    user.purchasedNotes.map(async (note) => {
+      // Create a signed URL that expires in 3600 seconds (1 hour)
+      const { data } = await supabase.storage
+        .from('product_files')
+        .createSignedUrl(note.contentUrl, 3600);
+
+      return {
+        ...note,
+        secureDownloadUrl: data?.signedUrl || null,
+      };
+    })
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-[calc(100vh-5rem)] bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-8">
         
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Library</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Access all your purchased and downloaded study materials here.
-            </p>
-          </div>
-          <div className="mt-4 md:mt-0">
-            <Link 
-              href="/explore" 
-              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors"
-            >
-              Browse More Notes
-            </Link>
-          </div>
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">My Library</h1>
+          <p className="mt-2 text-slate-600 font-medium">
+            Access all your purchased study materials, videos, and research papers securely.
+          </p>
         </div>
 
-        {/* Library Grid */}
-        {user.purchasedNotes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-sm border border-gray-100 border-dashed">
-            <svg className="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <h3 className="text-lg font-medium text-gray-900">Your library is empty</h3>
-            <p className="mt-1 text-sm text-gray-500">You haven&apos;t added any study materials yet.</p>
+        {notesWithSecureLinks.length === 0 ? (
+          <div className="bg-white p-12 rounded-2xl shadow-sm border border-slate-200 text-center flex flex-col items-center justify-center">
+            <span className="text-5xl mb-4">📚</span>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Your library is empty</h3>
+            <p className="text-slate-500 mb-6 max-w-md mx-auto">
+              You haven&apos;t purchased any materials yet. Explore the marketplace to find high-quality notes and projects.
+            </p>
             <Link 
               href="/explore" 
-              className="mt-6 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-5 py-2.5 rounded-lg transition"
+              className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition"
             >
               Explore Marketplace
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {user.purchasedNotes.map((note) => (
-              <div key={note.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                <div className="p-5 grow">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {notesWithSecureLinks.map((note) => (
+              <div 
+                key={note.id} 
+                className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow duration-300"
+              >
+                {/* Note: Since we added thumbnailUrl to the DB, you could eventually display it here 
+                  using a public Supabase URL: 
+                  https://[YOUR_SUPABASE_ID].supabase.co/storage/v1/object/public/product_thumbnails/[note.thumbnailUrl]
+                */}
+                
+                <div className="p-6 flex-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md uppercase tracking-wider">
                       {note.subject.name}
                     </span>
-                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                    <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md uppercase tracking-wider">
                       {note.level.replace("_", " ")}
                     </span>
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 leading-tight mb-2">
+                  
+                  <h3 className="text-xl font-bold text-slate-900 leading-tight mb-2">
                     {note.title}
                   </h3>
-                  <p className="text-sm text-gray-500">
-                    By {note.author.firstName} {note.author.lastName}
+                  
+                  <p className="text-sm font-medium text-slate-500 mb-4">
+                    Author: {note.author.firstName} {note.author.lastName}
                   </p>
                 </div>
                 
-                <div className="p-4 bg-gray-50 border-t border-gray-100">
-                  <a 
-                    href={note.contentUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                  >
-                    <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Open Document
-                  </a>
+                <div className="p-4 bg-slate-50 border-t border-slate-100 mt-auto">
+                  {note.secureDownloadUrl ? (
+                    <a 
+                      href={note.secureDownloadUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-300 shadow-sm text-sm font-bold rounded-xl text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                    >
+                      <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Download Material
+                    </a>
+                  ) : (
+                    <button disabled className="w-full px-4 py-3 bg-slate-100 text-slate-400 font-bold rounded-xl cursor-not-allowed">
+                      File Unavailable
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

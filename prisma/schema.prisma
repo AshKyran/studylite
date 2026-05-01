@@ -5,10 +5,10 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
 }
 
-// Enums for strict data validation
+// Enums
 enum Role {
   STUDENT
   TUTOR
@@ -22,34 +22,38 @@ enum EducationLevel {
   GENERAL
 }
 
-// Core User Model
+// Core User Profile (Linked to Supabase Auth)
 model User {
-  id            String     @id @default(uuid())
+  id            String     @id
   email         String     @unique
-  passwordHash  String
   firstName     String
   lastName      String
   role          Role       @default(STUDENT)
-  isVerified    Boolean    @default(false) // Gives Tutors/Researchers the "Verified" badge
+  isVerified    Boolean    @default(false)
+  qualification String?    // e.g., "Undergraduate", "PhD"
+  institution   String?    // e.g., "University of Nairobi"
+  address       String?    
+  currency      String     @default("KES")
+
+  paymentSubaccountCode String? // Stores the Paystack Subaccount ID for the 2.5% split
+  isProfileComplete     Boolean @default(false) // Locks the profile once set to true
   
   // Relations
   wallet        Wallet?
   notesCreated  Note[]     @relation("AuthorNotes")
   purchases     Purchase[]
-  purchasedNotes Note[] @relation("UserPurchases")
+  purchasedNotes Note[]    @relation("UserPurchases")
   
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
-  
 
   @@index([email])
-  
 }
 
-// Wallet for Paystack/M-Pesa micro-transactions
+// Wallet for Paystack micro-transactions
 model Wallet {
   id        String   @id @default(uuid())
-  balance   Float    @default(0.0) // Balance stored in KES
+  balance   Float    @default(0.0) 
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
@@ -57,7 +61,7 @@ model Wallet {
   updatedAt DateTime @updatedAt
 }
 
-// Subject Categories (e.g., "Biology", "Calculus II")
+// Subject Categories
 model Subject {
   id          String   @id @default(uuid())
   name        String   @unique
@@ -68,13 +72,14 @@ model Subject {
   updatedAt   DateTime @updatedAt
 }
 
-// The core learning material (Notes/Research/Videos)
+// Learning Materials
 model Note {
   id          String         @id @default(uuid())
   title       String
   description String
-  contentUrl  String         // AWS S3 or Supabase Storage URL for the actual PDF/Video
-  price       Float          @default(0.0) // 0.0 means Free Tier
+  contentUrl  String
+  thumbnailUrl String?       
+  price       Float          @default(0.0) 
   level       EducationLevel
   isPublished Boolean        @default(false)
   
@@ -84,8 +89,8 @@ model Note {
   subjectId   String
   subject     Subject        @relation(fields: [subjectId], references: [id], onDelete: Restrict)
   purchases   Purchase[]
-  purchasers User[] @relation("UserPurchases")
-  
+  purchasers  User[]         @relation("UserPurchases")
+ 
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
@@ -93,17 +98,16 @@ model Note {
   @@index([authorId])
 }
 
-// Ledger to track who bought what (and calculate creator revenue shares)
+// Ledger for Purchases
 model Purchase {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   noteId    String
   note      Note     @relation(fields: [noteId], references: [id], onDelete: Restrict)
-  amount    Float    // Locked price at the time of purchase
+  amount    Float    
   
   createdAt DateTime @default(now())
 
-  // Critical: Prevents a user from accidentally purchasing the same note twice
   @@unique([userId, noteId]) 
 }

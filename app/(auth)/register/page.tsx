@@ -1,61 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { registerUser } from "./actions"; // Import the Server Action
 
 export default function RegisterPage() {
-  const router = useRouter();
-  
-  // Manage the form inputs
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    role: "STUDENT", // Default role
-  });
-  
-  // Manage loading states and errors
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle form submission via Next.js Server Actions
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+    
+    const formData = new FormData(e.currentTarget);
 
-    try {
-      // Send data to the API route we built earlier
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Registration failed");
+    startTransition(async () => {
+      const result = await registerUser(formData);
+      
+      // If the server action returns an object with an error, display it
+      if (result?.error) {
+        setError(result.error);
       }
-
-      // Success! Push them to a login page (we will build this next)
-      router.push("/login?registered=true");
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : typeof error === "string"
-          ? error
-          : "An unexpected error occurred";
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -73,17 +40,16 @@ export default function RegisterPage() {
           </p>
         </div>
         
-        {/* Error Message Display */}
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 text-red-700 text-sm rounded-r-md">
             {error}
           </div>
         )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        {/* Note the onSubmit replacing the manual fetch handler */}
+        <form className="mt-8 space-y-6" onSubmit={onSubmit}>
           <div className="space-y-4">
             
-            {/* Name Grid */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
@@ -94,8 +60,6 @@ export default function RegisterPage() {
                   required
                   className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
                   placeholder="John"
-                  value={formData.firstName}
-                  onChange={handleChange}
                 />
               </div>
               <div>
@@ -107,13 +71,10 @@ export default function RegisterPage() {
                   required
                   className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
                   placeholder="Doe"
-                  value={formData.lastName}
-                  onChange={handleChange}
                 />
               </div>
             </div>
 
-            {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
               <input
@@ -124,12 +85,9 @@ export default function RegisterPage() {
                 required
                 className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
                 placeholder="you@example.com"
-                value={formData.email}
-                onChange={handleChange}
               />
             </div>
             
-            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <input
@@ -140,20 +98,17 @@ export default function RegisterPage() {
                 required
                 className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
                 placeholder="Minimum 8 characters"
-                value={formData.password}
-                onChange={handleChange}
+                minLength={8}
               />
             </div>
 
-            {/* Role Selector */}
             <div>
               <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">I am registering as a...</label>
               <select
                 id="role"
                 name="role"
+                defaultValue="STUDENT"
                 className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm bg-white"
-                value={formData.role}
-                onChange={handleChange}
               >
                 <option value="STUDENT">Student</option>
                 <option value="TUTOR">Tutor / Teacher</option>
@@ -162,14 +117,13 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Submit Button */}
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={isPending}
               className="group relative flex w-full justify-center rounded-lg border border-transparent bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 transition"
             >
-              {loading ? "Creating your account..." : "Sign up for Studylite"}
+              {isPending ? "Creating your account..." : "Sign up for Studylite"}
             </button>
           </div>
         </form>
