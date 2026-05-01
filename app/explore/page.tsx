@@ -1,9 +1,15 @@
 import prisma from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import Link from "next/link";
 
 export default async function ExplorePage() {
-  // 1. Fetch data securely with error handling
-  let notes = [];
+  type NoteWithRelations = Prisma.NoteGetPayload<{
+    include: {
+      author: { select: { firstName: true; lastName: true; isVerified: true } };
+      subject: { select: { name: true } };
+    };
+  }>;
+  let notes: NoteWithRelations[] = [];
   try {
     notes = await prisma.note.findMany({
       where: {
@@ -47,7 +53,7 @@ export default async function ExplorePage() {
 
             {/* Functional Search Bar Mockup (Ready for URL param wiring) */}
             <form className="flex flex-col sm:flex-row gap-3 max-w-3xl">
-              <div className="relative flex-grow">
+              <div className="relative grow">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -86,7 +92,7 @@ export default async function ExplorePage() {
               <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
             </div>
             <h3 className="text-xl font-bold text-slate-900">No materials found</h3>
-            <p className="mt-2 text-slate-500 max-w-sm text-center">We couldn't find any published notes matching your criteria. Be the first to upload one!</p>
+            <p className="mt-2 text-slate-500 max-w-sm text-center">We couldn&apos;t find any published notes matching your criteria. Be the first to upload one!</p>
             <Link href="/dashboard/upload" className="mt-6 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition-colors">
               Upload Study Material
             </Link>
@@ -102,7 +108,7 @@ export default async function ExplorePage() {
               >
                 
                 {/* Premium Gradient Header (Simulates a document cover) */}
-                <div className="h-24 bg-gradient-to-br from-slate-800 to-slate-900 relative p-4 flex items-start justify-between">
+                <div className="h-24 bg-linear-to-br from-slate-800 to-slate-900 relative p-4 flex items-start justify-between">
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
                   <span className="relative z-10 inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-white/20 text-white backdrop-blur-sm border border-white/10 shadow-sm">
                     {note.level.replace("_", " ")}
@@ -115,7 +121,7 @@ export default async function ExplorePage() {
                 </div>
                 
                 {/* Card Body */}
-                <div className="p-5 flex-grow flex flex-col">
+                <div className="p-5 grow flex flex-col">
                   <span className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2">
                     {note.subject.name}
                   </span>
@@ -124,7 +130,7 @@ export default async function ExplorePage() {
                     {note.title}
                   </h3>
                   
-                  <p className="text-sm text-slate-500 line-clamp-3 mb-4 flex-grow">
+                  <p className="text-sm text-slate-500 line-clamp-3 mb-4 grow">
                     {note.description}
                   </p>
 
@@ -138,7 +144,8 @@ export default async function ExplorePage() {
                       <span className="text-sm font-bold text-slate-900 flex items-center">
                         {note.author.firstName} {note.author.lastName}
                         {note.author.isVerified && (
-                          <svg className="w-4 h-4 ml-1 text-blue-500" fill="currentColor" viewBox="0 0 20 20" title="Verified Educator/Researcher">
+                          <svg className="w-4 h-4 ml-1 text-blue-500" fill="currentColor" viewBox="0 0 20 20" aria-label="Verified Educator/Researcher">
+                            <title>Verified Educator/Researcher</title>
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
                         )}
