@@ -19,10 +19,13 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
   }, []);
 
   // Close mobile menu when route changes
+// Close mobile menu when route changes
   useEffect(() => {
-    setIsMobileMenuOpen(false);
+    const closeTimer = setTimeout(() => {
+      setIsMobileMenuOpen(false);
+    }, 0);
+    return () => clearTimeout(closeTimer);
   }, [pathname]);
-
   // Do not render this public navbar inside the authenticated dashboard
   if (pathname?.startsWith("/dashboard")) {
     return null;
@@ -48,7 +51,7 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
         <div className="flex justify-between items-center h-20">
           
           {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
+          <div className="shrink-0 flex items-center">
             <Link href="/" className="flex items-center gap-2 group">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-md shadow-blue-600/20 group-hover:scale-105 transition-transform">
                 <span className="text-white font-bold text-lg leading-none">S</span>
