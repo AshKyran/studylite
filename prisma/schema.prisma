@@ -35,7 +35,7 @@ model User {
   address       String?    
   currency      String     @default("KES")
 
-  paymentSubaccountCode String? // Stores the Paystack Subaccount ID for the 2.5% split
+  paystackSubaccountCode String? // Stores the Paystack Subaccount ID for the 2.5% split
   isProfileComplete     Boolean @default(false) // Locks the profile once set to true
   
   // Relations

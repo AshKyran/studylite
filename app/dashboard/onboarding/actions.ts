@@ -62,7 +62,7 @@ export async function completeCreatorOnboarding(data: {
         institution: data.institution,
         address: data.address,
         currency: data.currency,
-        paymentSubaccountCode: subaccountCode,
+        paystackSubaccountCode: subaccountCode,
         isProfileComplete: true, // Loks the profile!
       },
     });
