@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, EducationLevel } from "@prisma/client"; // <-- Imported EducationLevel
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 
@@ -11,21 +11,21 @@ export default async function ExplorePage(
   const searchParams = await props.searchParams;
   
   // Our core platform split: High School vs Advanced (College/Research)
-  const currentFilter = searchParams.filter === "highschool" ? "highschool" : "advanced";
+  const currentFilter = searchParams.filter === "HIGH_SCHOOL" ? "HIGH_SCHOOL" : "COLLEGE";
 
   const supabase = await createClient();
 
-  // 1. Determine Database Query based on the core platform split
-  const level = currentFilter === "highschool" 
-    ? "HIGH_SCHOOL" 
-    : { in: ["COLLEGE", "GENERAL"] }; // Groups University & Research together
+  // 1. FIXED: Strictly type the query using Prisma's official Enums
+  const levelCondition = currentFilter === "HIGH_SCHOOL" 
+    ? { equals: EducationLevel.HIGH_SCHOOL } 
+    : { in: [EducationLevel.COLLEGE, EducationLevel.GENERAL] };
 
   // 2. Fetch Published Products securely
   const products = await prisma.note.findMany({
     where: {
       isPublished: true,
-      level,
-      ...(searchParams.subject && { subjectId: searchParams.subject }), // Optional subject filter
+      level: levelCondition, // <-- This is now perfectly type-safe!
+      ...(searchParams.subject && { subjectId: searchParams.subject }), 
     },
     include: {
       author: {
@@ -49,7 +49,6 @@ export default async function ExplorePage(
   };
 
   // 4. Generate Public Thumbnail URLs
-  // The 'product_thumbnails' bucket is public, so we don't need signed URLs here.
   const getImageUrl = (path: string | null) => {
     if (!path) return "https://placehold.co/600x400/e2e8f0/475569?text=No+Cover+Image";
     const { data } = supabase.storage.from("product_thumbnails").getPublicUrl(path);
@@ -72,9 +71,9 @@ export default async function ExplorePage(
           {/* High School vs Advanced Toggle */}
           <div className="inline-flex bg-slate-800 rounded-full p-1 border border-slate-700 shadow-inner">
             <Link 
-              href="/explore?filter=highschool"
+              href="/explore?filter=HIGH_SCHOOL"
               className={`px-6 py-3 rounded-full text-sm font-bold transition-all ${
-                currentFilter === "highschool" 
+                currentFilter === "HIGH_SCHOOL" 
                   ? "bg-blue-600 text-white shadow-md" 
                   : "text-slate-400 hover:text-white hover:bg-slate-700"
               }`}
@@ -82,9 +81,9 @@ export default async function ExplorePage(
               High School (KCSE)
             </Link>
             <Link 
-              href="/explore?filter=advanced"
+              href="/explore?filter=COLLEGE"
               className={`px-6 py-3 rounded-full text-sm font-bold transition-all ${
-                currentFilter === "advanced" 
+                currentFilter === "COLLEGE" 
                   ? "bg-emerald-600 text-white shadow-md" 
                   : "text-slate-400 hover:text-white hover:bg-slate-700"
               }`}
@@ -100,7 +99,7 @@ export default async function ExplorePage(
         
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-slate-900">
-            {currentFilter === "highschool" ? "High School Materials" : "Advanced & Higher Education"}
+            {currentFilter === "HIGH_SCHOOL" ? "High School Materials" : "Advanced & Higher Education"}
           </h2>
           <span className="text-sm font-medium text-slate-500 bg-slate-200 px-3 py-1 rounded-full">
             {products.length} Results
@@ -151,7 +150,7 @@ export default async function ExplorePage(
                         By {product.author.firstName} {product.author.lastName[0]}.
                       </p>
                       {/* Show qualification if it's an advanced material */}
-                      {currentFilter === "advanced" && product.author.qualification && (
+                      {currentFilter === "COLLEGE" && product.author.qualification && (
                         <p className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded inline-block">
                           {product.author.qualification}
                         </p>
