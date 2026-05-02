@@ -1,8 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
-
-const prisma = new PrismaClient();
 
 export default async function WalletPage() {
   // 1. Authenticate User via Supabase
