@@ -2,9 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 
-const prisma = new PrismaClient();
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-// Strict Types to banish `any`
+const globalForPrisma = globalThis as unknown as {
+  prisma?: PrismaClient;
+};
+
+const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
+
 interface PaystackWebhookEvent {
   event: string;
   data: {
@@ -29,6 +43,15 @@ interface PaystackWebhookEvent {
 
 export async function POST(req: NextRequest) {
   try {
+    const secret = process.env.PAYSTACK_SECRET_KEY;
+
+    if (!secret) {
+      return NextResponse.json(
+        { error: "Missing Paystack secret key" },
+        { status: 500 }
+      );
+    }
+
     const rawBody = await req.text();
     const signature = req.headers.get("x-paystack-signature");
 
@@ -36,9 +59,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing signature" }, { status: 401 });
     }
 
-    // Cryptographic Verification
     const hash = crypto
-      .createHmac("sha512", process.env.PAYSTACK_SECRET_KEY!)
+      .createHmac("sha512", secret)
       .update(rawBody)
       .digest("hex");
 
@@ -46,79 +68,71 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    // Safely parse the verified payload
     const event = JSON.parse(rawBody) as PaystackWebhookEvent;
     const data = event.data;
 
-    // ==========================================
-    // SCENARIO 1: SUCCESSFUL PAYMENT (Marketplace OR Subscription)
-    // ==========================================
     if (event.event === "charge.success") {
-      const amountPaid = data.amount / 100; 
+      const amountPaid = data.amount / 100;
       const reference = data.reference;
-      
+
       const userId = data.metadata?.userId;
       const productType = data.metadata?.productType;
 
       if (!userId) {
-        return NextResponse.json({ error: "Missing userId in metadata" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Missing userId in metadata" },
+          { status: 400 }
+        );
       }
 
       await prisma.$transaction(async (tx) => {
-        // Prevent duplicate webhook processing
         const existingPurchase = await tx.purchase.findUnique({
-          where: { reference: reference },
+          where: { reference },
         });
 
-        if (existingPurchase) return; // Already processed
+        if (existingPurchase) return;
 
-        // --- BRANCH A: ONE-OFF MARKETPLACE PURCHASE ---
         if (productType === "NOTE" || productType === "PROJECT") {
           const productId = data.metadata?.productId;
           if (!productId) throw new Error("Missing productId");
 
-          // Create ledger entry
           await tx.purchase.create({
             data: {
-              userId: userId,
+              userId,
               amount: amountPaid,
-              reference: reference,
+              reference,
               noteId: productType === "NOTE" ? productId : null,
               projectId: productType === "PROJECT" ? productId : null,
             },
           });
 
-          // Give access to the file
           if (productType === "NOTE") {
             await tx.user.update({
               where: { id: userId },
-              data: { purchasedNotes: { connect: { id: productId } } }
+              data: {
+                purchasedNotes: { connect: { id: productId } },
+              },
             });
           } else {
             await tx.user.update({
               where: { id: userId },
-              data: { purchasedProjects: { connect: { id: productId } } }
+              data: {
+                purchasedProjects: { connect: { id: productId } },
+              },
             });
           }
-        } 
-        
-        // --- BRANCH B: SUBSCRIPTION INITIALIZATION ---
-        else if (productType === "SUBSCRIPTION") {
-          // Update the user's subscription status
+        } else if (productType === "SUBSCRIPTION") {
           await tx.user.update({
             where: { id: userId },
             data: {
               isSubscribed: true,
-              paystackSubId: data.subscription_code, // Store so we can cancel it later if needed
+              paystackSubId: data.subscription_code ?? null,
             },
           });
         }
       });
     }
 
-    // ==========================================
-    // SCENARIO 2: RECURRING SUBSCRIPTION INVOICE (Money automatically deducted next month)
-    // ==========================================
     if (event.event === "invoice.create" || event.event === "invoice.update") {
       if (data.status === "failed" && data.customer?.email) {
         await prisma.user.update({
@@ -128,9 +142,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ==========================================
-    // SCENARIO 3: SUBSCRIPTION CANCELED
-    // ==========================================
     if (event.event === "subscription.disable") {
       if (data.customer?.email) {
         await prisma.user.update({
@@ -141,9 +152,9 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ status: "success" }, { status: 200 });
-
   } catch (error) {
     console.error("Paystack Webhook Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+
