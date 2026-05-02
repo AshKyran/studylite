@@ -111,3 +111,22 @@ export async function processSubscription(planType: PlanType) {
 
   redirect(data.data.authorization_url);
 }
+
+// Add this to the bottom of actions/subscription.ts
+export async function getSubscriptionStatus() {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (error || !user) return null;
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { 
+      isSubscribed: true, 
+      subscriptionPlan: true, 
+      trialEndsAt: true 
+    },
+  });
+
+  return dbUser;
+}

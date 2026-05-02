@@ -42,7 +42,7 @@ export default function Footer() {
                 <ul className="mt-4 space-y-4">
                   <li><Link href="/explore" className="text-sm text-slate-400 hover:text-white transition-colors">Marketplace</Link></li>
                   <li><Link href="/tutors" className="text-sm text-slate-400 hover:text-white transition-colors">Find a Tutor</Link></li>
-                  <li><Link href="/exams" className="text-sm text-slate-400 hover:text-white transition-colors">Online Exams</Link></li>
+                  <li><Link href="/tests" className="text-sm text-slate-400 hover:text-white transition-colors">Online Exams</Link></li>
                 </ul>
               </div>
               <div className="mt-12 md:mt-0">

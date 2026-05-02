@@ -1,4 +1,3 @@
-// app/(auth)/login/page.tsx
 "use client";
 
 import { useState, useTransition, Suspense, type FormEvent } from "react";
@@ -39,15 +38,16 @@ function LoginForm() {
     });
   };
 
+  // Notice we removed the max-w, border, and background color here so it sits flush in the layout
   return (
-    <div className="w-full max-w-md space-y-8 rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
-      <div className="space-y-2 text-center">
-        <h2 className="text-3xl font-extrabold text-gray-900">Welcome back</h2>
-        <p className="text-sm text-gray-600">
+    <div className="w-full">
+      <div className="space-y-2">
+        <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Welcome back</h2>
+        <p className="text-sm sm:text-base text-slate-500 font-medium">
           Don&apos;t have an account?{" "}
           <Link
             href="/register"
-            className="font-medium text-blue-600 transition hover:text-blue-500"
+            className="font-bold text-blue-600 transition-colors hover:text-blue-500"
           >
             Sign up for free
           </Link>
@@ -56,7 +56,7 @@ function LoginForm() {
 
       {isNewlyRegistered && (
         <div
-          className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+          className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700"
           role="status"
           aria-live="polite"
         >
@@ -66,7 +66,7 @@ function LoginForm() {
 
       {error && (
         <div
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"
           role="alert"
           aria-live="assertive"
         >
@@ -74,11 +74,12 @@ function LoginForm() {
         </div>
       )}
 
+      {/* Google Login[cite: 12] */}
       <button
         type="button"
         onClick={onGoogleLogin}
         disabled={isPending}
-        className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-8 flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
       >
         <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
           <path
@@ -101,60 +102,58 @@ function LoginForm() {
         {isPending ? "Connecting..." : "Continue with Google"}
       </button>
 
-      <div className="relative">
+      <div className="relative mt-8">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200" />
+          <div className="w-full border-t border-slate-200" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="bg-white px-2 text-gray-500">Or continue with email</span>
+          <span className="bg-white px-4 font-medium text-slate-500">Or continue with email</span>
         </div>
       </div>
 
-      <form className="space-y-6" onSubmit={onSubmit}>
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="mb-1 block text-sm font-medium text-gray-700"
-            >
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              autoCapitalize="none"
-              spellCheck={false}
-              required
-              placeholder="you@example.com"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
+      <form className="mt-6 space-y-5" onSubmit={onSubmit}>
+        <div>
+          <label
+            htmlFor="email"
+            className="mb-1.5 block text-sm font-bold text-slate-700"
+          >
+            Email address
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            spellCheck={false}
+            required
+            placeholder="you@example.com"
+            className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 placeholder-slate-400 transition-colors focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+          />
+        </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="mb-1 block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              placeholder="••••••••"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
+        <div>
+          <label
+            htmlFor="password"
+            className="mb-1.5 block text-sm font-bold text-slate-700"
+          >
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            placeholder="••••••••"
+            className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 placeholder-slate-400 transition-colors focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+          />
         </div>
 
         <button
           type="submit"
           disabled={isPending}
-          className="flex w-full justify-center rounded-lg border border-transparent bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-400"
+          className="mt-2 flex w-full justify-center rounded-xl border border-transparent bg-blue-600 px-4 py-3.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-blue-400"
         >
           {isPending ? "Signing in..." : "Sign in"}
         </button>
@@ -163,12 +162,11 @@ function LoginForm() {
   );
 }
 
+// Removed the 80vh flex centering so it expands properly in the new layout
 export default function LoginPage() {
   return (
-    <div className="flex min-h-[80vh] items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <Suspense fallback={<div className="text-gray-500 animate-pulse">Loading secure login...</div>}>
-        <LoginForm />
-      </Suspense>
-    </div>
+    <Suspense fallback={<div className="text-slate-500 text-sm font-medium animate-pulse">Loading secure login...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
