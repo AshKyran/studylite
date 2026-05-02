@@ -11,7 +11,12 @@ type Subject = {
   name: string;
 };
 
+const { data: { user } } = await supabase.auth.getUser();
+if (!user) throw new Error("No browser session found");
+
+
 export default function UploadNoteForm({ subjects, userId }: { subjects: Subject[], userId: string }) {
+  
   const router = useRouter();
   const supabase = createClient();
   
