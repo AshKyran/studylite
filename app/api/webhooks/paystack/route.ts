@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import crypto from "crypto";
 
 export const runtime = "nodejs";
@@ -9,9 +10,14 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL!,
+});
+
 const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
+    adapter,
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 
@@ -56,7 +62,10 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get("x-paystack-signature");
 
     if (!signature) {
-      return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Missing signature" },
+        { status: 401 }
+      );
     }
 
     const hash = crypto
@@ -65,12 +74,18 @@ export async function POST(req: NextRequest) {
       .digest("hex");
 
     if (hash !== signature) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Invalid signature" },
+        { status: 401 }
+      );
     }
 
     const event = JSON.parse(rawBody) as PaystackWebhookEvent;
     const data = event.data;
 
+    // ==========================================
+    // SCENARIO 1: SUCCESSFUL PAYMENT
+    // ==========================================
     if (event.event === "charge.success") {
       const amountPaid = data.amount / 100;
       const reference = data.reference;
@@ -90,11 +105,18 @@ export async function POST(req: NextRequest) {
           where: { reference },
         });
 
+        // Prevent duplicate webhook processing
         if (existingPurchase) return;
 
+        // ==========================================
+        // NOTE / PROJECT PURCHASE
+        // ==========================================
         if (productType === "NOTE" || productType === "PROJECT") {
           const productId = data.metadata?.productId;
-          if (!productId) throw new Error("Missing productId");
+
+          if (!productId) {
+            throw new Error("Missing productId");
+          }
 
           await tx.purchase.create({
             data: {
@@ -110,18 +132,27 @@ export async function POST(req: NextRequest) {
             await tx.user.update({
               where: { id: userId },
               data: {
-                purchasedNotes: { connect: { id: productId } },
+                purchasedNotes: {
+                  connect: { id: productId },
+                },
               },
             });
           } else {
             await tx.user.update({
               where: { id: userId },
               data: {
-                purchasedProjects: { connect: { id: productId } },
+                purchasedProjects: {
+                  connect: { id: productId },
+                },
               },
             });
           }
-        } else if (productType === "SUBSCRIPTION") {
+        }
+
+        // ==========================================
+        // SUBSCRIPTION ACTIVATION
+        // ==========================================
+        else if (productType === "SUBSCRIPTION") {
           await tx.user.update({
             where: { id: userId },
             data: {
@@ -133,28 +164,48 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    if (event.event === "invoice.create" || event.event === "invoice.update") {
+    // ==========================================
+    // FAILED RECURRING SUBSCRIPTION PAYMENT
+    // ==========================================
+    if (
+      event.event === "invoice.create" ||
+      event.event === "invoice.update"
+    ) {
       if (data.status === "failed" && data.customer?.email) {
         await prisma.user.update({
           where: { email: data.customer.email },
-          data: { isSubscribed: false },
+          data: {
+            isSubscribed: false,
+          },
         });
       }
     }
 
+    // ==========================================
+    // SUBSCRIPTION DISABLED
+    // ==========================================
     if (event.event === "subscription.disable") {
       if (data.customer?.email) {
         await prisma.user.update({
           where: { email: data.customer.email },
-          data: { isSubscribed: false, paystackSubId: null },
+          data: {
+            isSubscribed: false,
+            paystackSubId: null,
+          },
         });
       }
     }
 
-    return NextResponse.json({ status: "success" }, { status: 200 });
+    return NextResponse.json(
+      { status: "success" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Paystack Webhook Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
-
