@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
 // Enums
@@ -24,28 +24,40 @@ enum EducationLevel {
 
 // Core User Profile (Linked to Supabase Auth)
 model User {
-  id            String     @id
-  email         String     @unique
+  id            String  @id
+  email         String  @unique
   firstName     String
   lastName      String
-  role          Role       @default(STUDENT)
-  isVerified    Boolean    @default(false)
-  qualification String?    // e.g., "Undergraduate", "PhD"
-  institution   String?    // e.g., "University of Nairobi"
-  address       String?    
-  currency      String     @default("KES")
+  role          Role    @default(STUDENT)
+  isVerified    Boolean @default(false)
+  qualification String? // e.g., "Undergraduate", "PhD"
+  institution   String? // e.g., "University of Nairobi"
+  address       String?
+  currency      String  @default("KES")
 
-  paystackSubaccountCode String? // Stores the Paystack Subaccount ID for the 2.5% split
-  isProfileComplete     Boolean @default(false) // Locks the profile once set to true
-  
+  paystackSubaccountCode String?
+  isProfileComplete      Boolean @default(false)
+
   // Relations
-  wallet        Wallet?
-  notesCreated  Note[]     @relation("AuthorNotes")
-  purchases     Purchase[]
-  purchasedNotes Note[]    @relation("UserPurchases")
-  
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  wallet          Wallet?
+  notesCreated    Note[]    @relation("AuthorNotes")
+  projectsCreated Project[] @relation("AuthorProjects")
+
+  purchases         Purchase[]
+  purchasedNotes    Note[]        @relation("UserPurchases")
+  purchasedProjects Project[]     @relation("UserProjectPurchases")
+  isSubscribed      Boolean       @default(false)
+  subscriptionPlan  String?
+  paystackSubId     String?       @unique
+  trialEndsAt       DateTime?
+  createdExams      Exam[]        @relation("CreatedExams")
+  examAttempts      ExamAttempt[] // To track their scores
+
+  studentRequests MaterialRequest[] @relation("StudentRequests")
+  tutorRequests   MaterialRequest[] @relation("TutorRequests")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([email])
 }
@@ -53,61 +65,192 @@ model User {
 // Wallet for Paystack micro-transactions
 model Wallet {
   id        String   @id @default(uuid())
-  balance   Float    @default(0.0) 
+  balance   Float    @default(0.0)
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 // Subject Categories
 model Subject {
-  id          String   @id @default(uuid())
-  name        String   @unique
+  id          String  @id @default(uuid())
+  name        String  @unique
   description String?
-  notes       Note[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  notes    Note[]
+  projects Project[] // NEW
+  exams    Exam[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-// Learning Materials
+// Learning Materials (Notes & Papers)
 model Note {
-  id          String         @id @default(uuid())
-  title       String
-  description String
-  contentUrl  String
-  thumbnailUrl String?       
-  price       Float          @default(0.0) 
-  level       EducationLevel
-  isPublished Boolean        @default(false)
-  
+  id           String         @id @default(uuid())
+  title        String
+  description  String
+  contentUrl   String
+  thumbnailUrl String?
+  price        Float          @default(0.0)
+  level        EducationLevel
+  isPublished  Boolean        @default(false)
+
   // Relations
-  authorId    String
-  author      User           @relation("AuthorNotes", fields: [authorId], references: [id], onDelete: Restrict)
-  subjectId   String
-  subject     Subject        @relation(fields: [subjectId], references: [id], onDelete: Restrict)
-  purchases   Purchase[]
-  purchasers  User[]         @relation("UserPurchases")
- 
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  authorId  String
+  author    User    @relation("AuthorNotes", fields: [authorId], references: [id], onDelete: Restrict)
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  purchases  Purchase[]
+  purchasers User[]     @relation("UserPurchases")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([subjectId])
   @@index([authorId])
 }
 
-// Ledger for Purchases
-model Purchase {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  noteId    String
-  note      Note     @relation(fields: [noteId], references: [id], onDelete: Restrict)
-  amount    Float    
-  
-  createdAt DateTime @default(now())
+// Advanced Projects Hub (Codebases, Theses, Capstones)
+model Project {
+  id          String @id @default(uuid())
+  title       String
+  description String @db.Text
+  price       Float  @default(0.0)
 
-  @@unique([userId, noteId]) 
+  // Project-Specific Metadata
+  techStack String[] // e.g., ["Python", "TensorFlow", "React"]
+  demoUrl   String? // Optional live preview link
+
+  // Deliverables (Separating the code from the documentation)
+  documentUrl   String? // The thesis/report PDF
+  sourceCodeUrl String? // The actual codebase ZIP
+  thumbnailUrl  String?
+
+  level       EducationLevel
+  isPublished Boolean        @default(false)
+
+  // Relations
+  authorId  String
+  author    User    @relation("AuthorProjects", fields: [authorId], references: [id], onDelete: Restrict)
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  purchases  Purchase[]
+  purchasers User[]     @relation("UserProjectPurchases")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([subjectId])
+  @@index([authorId])
+}
+
+// Universal Ledger for Purchases
+model Purchase {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // A purchase belongs to EITHER a note OR a project
+  noteId String?
+  note   Note?   @relation(fields: [noteId], references: [id], onDelete: Restrict)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Restrict)
+
+  amount    Float
+  reference String @unique
+
+  createdAt DateTime @default(now())
+}
+
+// ==========================================
+// ASSESSMENT ENGINE MODELS
+// ==========================================
+
+model Exam {
+  id             String         @id @default(cuid())
+  title          String
+  description    String?
+  level          EducationLevel
+  type           String // "TIMED", "QUIZ", "LIVE"
+  duration       Int? // Duration in minutes (null for untimed)
+  questionsCount Int            @default(0) // Cached count for fast loading
+  isPublished    Boolean        @default(false)
+
+  // Relations
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  authorId String
+  author   User   @relation("CreatedExams", fields: [authorId], references: [id])
+
+  questions Question[]
+  attempts  ExamAttempt[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Question {
+  id    String @id @default(cuid())
+  text  String @db.Text
+  marks Int    @default(1)
+
+  // This is crucial for your PDF Generator's "Include Marking Scheme" feature!
+  explanation String? @db.Text
+
+  // Relations
+  examId String
+  exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  options Option[]
+}
+
+model Option {
+  id        String  @id @default(cuid())
+  text      String
+  isCorrect Boolean @default(false)
+
+  // Relations
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+// Tracks a student's score after they finish taking a test
+model ExamAttempt {
+  id          String   @id @default(cuid())
+  score       Int // How many they got right
+  maxScore    Int // Total possible marks
+  completedAt DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  examId String
+  exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
+}
+
+model MaterialRequest {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  format      String // e.g., "PDF", "ZIP_BUNDLE"
+  deadline    DateTime
+  offerAmount Int // How much the student is paying
+  status      String   @default("PENDING") // PENDING, IN_PROGRESS, DELIVERED, REJECTED
+
+  // Relations
+  studentId String
+  student   User   @relation("StudentRequests", fields: [studentId], references: [id])
+
+  tutorId String
+  tutor   User   @relation("TutorRequests", fields: [tutorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

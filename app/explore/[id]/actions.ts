@@ -99,6 +99,7 @@ export async function initializeCheckout(formData: FormData) {
     // Paystack will send this exact data back to our server in the background 
     // once the M-Pesa prompt succeeds, so our Webhook knows who to give the file to.
     metadata: {
+      platform: "studylite",
       userId: authUser.id,
       productId: product.id,
       custom_fields: [

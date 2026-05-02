@@ -29,11 +29,32 @@ export default async function DashboardPage() {
 
   const isCreator = user.role === "TUTOR" || user.role === "RESEARCHER";
 
+  // --- NEW: Subscription Logic ---
+  let daysLeft = null;
+  let isTrialExpired = false;
+  
+  if (user.trialEndsAt) {
+    const diffTime = new Date(user.trialEndsAt).getTime() - new Date().getTime();
+    daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (daysLeft <= 0) isTrialExpired = true;
+  }
+
+  const getPlanName = (plan: string | null) => {
+    switch(plan) {
+      case "MONTHLY": return "Monthly Premium";
+      case "QUARTERLY": return "Quarterly Premium";
+      case "YEARLY": return "Yearly Premium";
+      case "EARLY_ADOPTER_PRO": return "VIP 3-Month Access";
+      case "TRIAL_7_DAY": return "7-Day Trial";
+      default: return "Premium Member";
+    }
+  };
+
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-slate-50 font-sans p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto space-y-8">
         
-        {/* Header Section */}
+        {/* Header Section (Untouched) */}
         <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
           <div>
             <div className="flex items-center gap-3 mb-2">
@@ -57,7 +78,42 @@ export default async function DashboardPage() {
           </Link>
         </header>
 
-        {/* Quick Stats Grid */}
+        {/* --- NEW: Subscription Status Banner --- */}
+        {!user.isSubscribed ? (
+          <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-800">
+            <div>
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                <span>🔒</span> Free Tier {isTrialExpired && "(Trial Expired)"}
+              </h3>
+              <p className="text-slate-300 text-sm mt-1">Upgrade to unlock the Research Hub, Online Tests, and unlimited library access.</p>
+            </div>
+            <Link href="/pricing" className="shrink-0 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-sm transition-colors text-sm">
+              Upgrade to Premium
+            </Link>
+          </div>
+        ) : (
+          <div className={`p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 border ${user.subscriptionPlan?.includes("TRIAL") ? "bg-amber-50 border-amber-200 text-amber-900" : "bg-blue-50 border-blue-200 text-blue-900"}`}>
+            <div>
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                <span>{user.subscriptionPlan?.includes("TRIAL") ? "⏱️" : "✨"}</span> 
+                Active Subscription: {getPlanName(user.subscriptionPlan)}
+              </h3>
+              {user.subscriptionPlan?.includes("TRIAL") && daysLeft !== null && daysLeft > 0 && (
+                <p className="opacity-80 text-sm mt-1">Your free access expires in {daysLeft} days. Don&apos;t lose your progress!</p>
+              )}
+              {!user.subscriptionPlan?.includes("TRIAL") && (
+                <p className="opacity-80 text-sm mt-1">You have full access to all premium features.</p>
+              )}
+            </div>
+            {user.subscriptionPlan?.includes("TRIAL") && (
+              <Link href="/pricing" className="shrink-0 px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-sm transition-colors text-sm">
+                Secure Your Premium Plan
+              </Link>
+            )}
+          </div>
+        )}
+
+        {/* Quick Stats Grid (Untouched) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">

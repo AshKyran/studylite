@@ -1,4 +1,4 @@
-import { PrismaClient, EducationLevel } from "@prisma/client"; // <-- Imported EducationLevel
+import { PrismaClient, EducationLevel } from "@prisma/client"; 
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 

@@ -28,23 +28,35 @@ export default async function WalletPage() {
 
   // 3. Fetch all Sales History from the Purchase Ledger
   const salesHistory = await prisma.purchase.findMany({
-    where: {
-      note: {
-        authorId: authUser.id,
+  where: {
+    OR: [
+      {
+        note: {
+          authorId: authUser.id,
+        },
       },
-    },
-    include: {
-      note: {
-        select: { title: true },
+      {
+        project: {
+          authorId: authUser.id,
+        },
       },
-      user: {
-        select: { firstName: true, lastName: true },
-      },
+    ],
+  },
+  include: {
+    note: {
+      select: { title: true },
     },
-    orderBy: {
-      createdAt: "desc",
+    project: {
+      select: { title: true },
     },
-  });
+    user: {
+      select: { firstName: true, lastName: true },
+    },
+  },
+  orderBy: {
+    createdAt: "desc",
+  },
+});
 
   // 4. Calculate Financial Metrics (97.5% Creator Cut)
   const CREATOR_CUT_PERCENTAGE = 0.975;
@@ -157,7 +169,9 @@ export default async function WalletPage() {
                         {sale.user.firstName[0]}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-900">{sale.note.title}</p>
+                       <p className="text-sm font-bold text-slate-900">
+                         {sale.note?.title ?? sale.project?.title ?? "Untitled purchase"}
+                       </p>
                         <p className="text-sm text-slate-500 font-medium">
                           Purchased by {sale.user.firstName} {sale.user.lastName}
                         </p>
