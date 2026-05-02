@@ -1,10 +1,11 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { PrismaClient, EducationLevel } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { jsPDF } from "jspdf";
+import { EducationLevel } from "@prisma/client";
 
-const prisma = new PrismaClient();
+
 
 interface GeneratePdfPayload {
   subjectId: string;

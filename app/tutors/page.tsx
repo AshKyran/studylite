@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import Link from "next/link";
 
-const prisma = new PrismaClient();
+
 
 export default async function TutorsDirectoryPage() {
   // 1. Fetch Verified Educators & Researchers securely
@@ -55,10 +55,10 @@ export default async function TutorsDirectoryPage() {
       
       {/* 1. PREMIUM HEADER */}
       <section className="relative pt-32 pb-24 overflow-hidden bg-slate-950 border-b border-slate-800">
-        <div className="absolute top-0 left-1/4 w-full max-w-2xl h-[400px] bg-emerald-600/10 blur-[100px] rounded-full pointer-events-none"></div>
+        <div className="absolute top-0 left-1/4 w-full max-w-2xl h-100 bg-emerald-600/10 blur-[100px] rounded-full pointer-events-none"></div>
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-600/10 blur-[100px] rounded-full pointer-events-none"></div>
         
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-size-[4rem_4rem] [mask-[radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center">
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-slate-900/50 border border-slate-700 backdrop-blur-md text-slate-300 font-medium text-xs sm:text-sm mb-6 shadow-xl">
@@ -67,7 +67,7 @@ export default async function TutorsDirectoryPage() {
           </div>
           
           <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-6 leading-tight max-w-4xl">
-            Commission Custom <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">Academic Materials.</span>
+            Commission Custom <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 to-teal-400">Academic Materials.</span>
           </h1>
           
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mb-10 leading-relaxed font-light">

@@ -1,9 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import GeneratorForm from "./GeneratorForm";
 
-const prisma = new PrismaClient();
 
 export default async function ExamGeneratorPage() {
   // 1. Strict Gatekeeper Logic

@@ -1,10 +1,10 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { PrismaClient, EducationLevel } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { EducationLevel } from "@prisma/client";
 
-const prisma = new PrismaClient();
 
 // Types mirroring our form state
 export interface CreateExamPayload {

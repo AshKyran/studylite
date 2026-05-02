@@ -1,10 +1,11 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
+import prisma from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+
+
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
 // 1. Define the strict TypeScript Interface to replace 'any'

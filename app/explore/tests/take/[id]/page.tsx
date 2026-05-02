@@ -1,9 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
 import TestArena from "./TestArena"; 
-
-const prisma = new PrismaClient();
 
 export default async function TakeTestPage({
   params,

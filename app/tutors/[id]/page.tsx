@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import prisma from "@/lib/prisma"; // Import the Prisma client instance with PostgreSQL adapter
+import prisma from "@/lib/prisma"; 
 
 export default async function TutorProfilePage({ params }: { params: { id: string } }) {
   // 1. Fetch the Creator and their published digital materials (PDFs/ZIPs)

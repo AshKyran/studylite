@@ -1,10 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { initializeCheckout } from "./actions";
 
-const prisma = new PrismaClient();
 
 // In Next.js 16, params are asynchronous
 export default async function ProductDetailPage(props: { params: Promise<{ id: string }> }) {
@@ -81,7 +80,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
           {/* LEFT COLUMN: Image & Description */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm">
-              <div className="aspect-[16/9] w-full bg-slate-100 relative">
+              <div className="aspect-video w-full bg-slate-100 relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src={getImageUrl(product.thumbnailUrl)} 

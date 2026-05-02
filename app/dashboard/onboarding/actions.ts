@@ -1,9 +1,7 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
-
-const prisma = new PrismaClient();
 
 export async function completeCreatorOnboarding(data: {
   qualification: string;

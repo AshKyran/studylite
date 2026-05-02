@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import Link from "next/link";
-
-const prisma = new PrismaClient();
 
 export default async function DashboardLayout({
   children,

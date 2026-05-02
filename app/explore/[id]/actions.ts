@@ -1,10 +1,9 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
-const prisma = new PrismaClient();
 
 export async function initializeCheckout(formData: FormData) {
   const productId = formData.get("productId") as string;

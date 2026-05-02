@@ -1,8 +1,10 @@
-import { PrismaClient, EducationLevel } from "@prisma/client"; 
+
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
+import  prisma  from "@/lib/prisma";
+import { EducationLevel } from "@prisma/client";
 
-const prisma = new PrismaClient();
+
 
 // In Next.js 16, searchParams is asynchronous
 export default async function ExplorePage(

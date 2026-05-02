@@ -1,7 +1,6 @@
-import { PrismaClient } from "@prisma/client";
-import Link from "next/link";
 
-const prisma = new PrismaClient();
+import Link from "next/link";
+import prisma from "@/lib/prisma";
 
 // Helper function to format KES currency
 const formatCurrency = (amount: number) => {

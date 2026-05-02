@@ -1,10 +1,9 @@
 import { createClient } from "@/utils/supabase/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { initializeProjectCheckout } from "./actions";
 
-const prisma = new PrismaClient();
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-KE", {

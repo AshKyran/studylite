@@ -1,10 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
-import { PrismaClient } from "@prisma/client";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import RequestForm from "./RequestForm";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 export default async function RequestMaterialPage({ params }: { params: { id: string } }) {
   // 1. Strict Authentication

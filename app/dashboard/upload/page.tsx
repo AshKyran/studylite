@@ -1,9 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import UploadNoteForm from "@/components/UploadNoteForm"; 
-
-const prisma = new PrismaClient();
 
 export default async function UploadPage() {
   // 1. Secure Authentication via Supabase
