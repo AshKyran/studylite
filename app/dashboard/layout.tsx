@@ -27,7 +27,7 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  // 2. Fetch the user's profile from Prisma to determine their Role
+  // 2. Fetch the user's profile from Prisma
   const user = await prisma.user.findUnique({
     where: { id: authUser.id },
     select: { firstName: true, lastName: true, email: true, role: true },
@@ -37,19 +37,27 @@ export default async function DashboardLayout({
     redirect("/login?error=ProfileNotFound");
   }
 
-  // Check if user is a creator (Tutor or Researcher) to show specific menu items
+  // Check if user is a creator (Tutor or Researcher)
   const isCreator = user.role === "TUTOR" || user.role === "RESEARCHER";
 
+  // 3. Inline Server Action for secure Logout
+  async function handleSignOut() {
+    "use server";
+    const supabaseServer = await createClient();
+    await supabaseServer.auth.signOut();
+    redirect("/login");
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row selection:bg-blue-200 selection:text-blue-900">
+    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row selection:bg-blue-200 selection:text-blue-900 relative">
       
       {/* ==========================================
           DESKTOP SIDEBAR
           ========================================== */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 fixed h-full z-50 shadow-sm">
+      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 sticky top-0 h-screen shrink-0 z-40 shadow-sm">
         
         {/* Brand Header */}
-        <div className="h-20 flex items-center px-6 border-b border-slate-100">
+        <div className="h-20 flex items-center px-6 border-b border-slate-100 shrink-0">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="bg-blue-600 p-1.5 rounded-lg group-hover:bg-blue-700 transition-colors shadow-sm">
               <BookOpen className="h-5 w-5 text-white" />
@@ -96,7 +104,7 @@ export default async function DashboardLayout({
             </>
           )}
 
-          {/* Student Specific (Optional, adjust as needed) */}
+          {/* Student Specific */}
           {!isCreator && (
             <>
               <div className="pt-6 pb-2">
@@ -111,7 +119,7 @@ export default async function DashboardLayout({
         </nav>
 
         {/* User Profile & Footer Actions */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50 shrink-0">
           <Link href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-bold transition-all group mb-1">
             <Settings className="h-5 w-5 text-slate-400 group-hover:text-slate-600" />
             Settings
@@ -128,9 +136,9 @@ export default async function DashboardLayout({
               </div>
             </div>
             
-            {/* Note: Adjust the href to wherever your actual sign-out route/action lives */}
-            <form action="/auth/signout" method="POST">
-              <button className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors" title="Sign Out">
+            {/* Functional Desktop Logout Button */}
+            <form action={handleSignOut}>
+              <button type="submit" className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors" title="Sign Out">
                 <LogOut className="h-5 w-5" />
               </button>
             </form>
@@ -141,22 +149,32 @@ export default async function DashboardLayout({
       {/* ==========================================
           MAIN CONTENT AREA
           ========================================== */}
-      <main className="flex-1 w-full md:ml-64 pb-20 md:pb-0 min-h-screen">
-        {/* Mobile Header (Optional: gives mobile users a top anchor) */}
-        <header className="md:hidden flex items-center justify-between h-16 px-4 bg-white border-b border-slate-200 sticky top-0 z-40">
+      <main className="flex-1 w-full pb-20 md:pb-0 min-h-screen flex flex-col min-w-0">
+        
+        {/* Mobile Header */}
+        <header className="md:hidden flex items-center justify-between h-16 px-4 bg-white border-b border-slate-200 sticky top-0 z-40 shrink-0 shadow-sm">
           <Link href="/" className="flex items-center gap-2">
             <div className="bg-blue-600 p-1 rounded-md">
               <BookOpen className="h-4 w-4 text-white" />
             </div>
             <span className="text-lg font-black text-slate-900 tracking-tight">StudyLite.</span>
           </Link>
-          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
-            {user.firstName[0]}
+          
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
+              {user.firstName[0]}
+            </div>
+            {/* Functional Mobile Logout Button */}
+            <form action={handleSignOut}>
+              <button type="submit" className="text-slate-400 hover:text-red-600 transition-colors p-1" title="Sign Out">
+                <LogOut className="h-5 w-5" />
+              </button>
+            </form>
           </div>
         </header>
 
-        {/* Page Content Injects Here */}
-        <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
+        {/* Page Content */}
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto w-full">
           {children}
         </div>
       </main>
@@ -164,7 +182,7 @@ export default async function DashboardLayout({
       {/* ==========================================
           MOBILE BOTTOM NAVIGATION
           ========================================== */}
-      <nav className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200 z-50 pb-safe">
+      <nav className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200 z-50 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <div className="flex items-center justify-around px-2 py-2">
           
           <Link href="/dashboard" className="flex flex-col items-center p-2 text-slate-500 hover:text-blue-600 transition-colors">
