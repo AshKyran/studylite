@@ -51,7 +51,7 @@ export default async function UploadPage() {
         </div>
 
         {/* The Client Form Component */}
-        <UploadNoteForm subjects={subjects} />
+        <UploadNoteForm subjects={subjects} userId={authUser.id} />
         
       </div>
     </div>
