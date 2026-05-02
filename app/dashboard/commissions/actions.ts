@@ -4,17 +4,12 @@ import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 
-/**
- * Updates the status of a material request.
- * If status is 'DELIVERED', it triggers the payout from Escrow.
- */
 export async function updateCommissionStatus(requestId: string, newStatus: string) {
   const supabase = await createClient();
   const { data: { user: authUser } } = await supabase.auth.getUser();
 
   if (!authUser) throw new Error("Unauthorized");
 
-  // 1. Fetch the request to verify ownership and amount
   const request = await prisma.materialRequest.findUnique({
     where: { id: requestId },
     select: { tutorId: true, offerAmount: true, status: true, studentId: true }
@@ -24,7 +19,6 @@ export async function updateCommissionStatus(requestId: string, newStatus: strin
     throw new Error("Request not found or unauthorized access.");
   }
 
-  // 2. Prevent illegal state transitions
   if (request.status === "DELIVERED" || request.status === "REJECTED") {
     throw new Error("This commission is already closed.");
   }
@@ -32,43 +26,46 @@ export async function updateCommissionStatus(requestId: string, newStatus: strin
   try {
     return await prisma.$transaction(async (tx) => {
       
-      // A. Update the Request Status
       const updatedRequest = await tx.materialRequest.update({
         where: { id: requestId },
         data: { status: newStatus }
       });
 
+      if (newStatus === "DELIVERED") {
+        await tx.wallet.upsert({
+          where: { userId: authUser.id },
+          update: { balance: { increment: request.offerAmount } },
+          create: { userId: authUser.id, balance: request.offerAmount }
+        });
+      }
+
       // B. ESCROW PAYOUT LOGIC: Only if status is DELIVERED
       if (newStatus === "DELIVERED") {
         await tx.wallet.update({
-          where: { userId: authUser.id }, // The Creator
-          data: { 
-            balance: { increment: request.offerAmount } 
-          }
+          where: { userId: authUser.id }, 
+          data: { balance: { increment: request.offerAmount } }
         });
         
-        // C. Record the Transaction for the Creator's history
-        // (Assuming you have a Transaction model)
-        /*
+        // UNCOMMENTED AND READY:
         await tx.transaction.create({
           data: {
             userId: authUser.id,
             amount: request.offerAmount,
             type: "COMMISSION_PAYOUT",
+            reference: `ESCROW_PAYOUT_${requestId}`, // <--- Generated unique reference
             description: `Payment for commission: ${requestId}`
           }
         });
-        */
       }
 
-      // D. REFUND LOGIC: If the Creator REJECTS the work
       if (newStatus === "REJECTED") {
         const platformFee = Math.round(request.offerAmount * 0.05);
         const totalRefund = request.offerAmount + platformFee;
 
-        await tx.wallet.update({
+        await tx.wallet.upsert({
           where: { userId: request.studentId },
-          data: { balance: { increment: totalRefund } }
+          update: { balance: { increment: totalRefund } },
+          create: { userId: request.studentId, balance: totalRefund }
         });
       }
 

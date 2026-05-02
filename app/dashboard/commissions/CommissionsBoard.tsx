@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { updateCommissionStatus } from "./actions";
+import { createClient } from "@/utils/supabase/client";
 
 type MaterialRequest = {
   id: string;
@@ -10,7 +12,7 @@ type MaterialRequest = {
   format: string;
   deadline: Date;
   offerAmount: number;
-  status: string; // PENDING, IN_PROGRESS, DELIVERED, REJECTED
+  status: string;
   createdAt: Date;
   student: {
     firstName: string;
@@ -20,53 +22,87 @@ type MaterialRequest = {
 
 export default function CommissionsBoard({ initialRequests }: { initialRequests: MaterialRequest[] }) {
   const router = useRouter();
+  const supabase = createClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // --- STATE ---
-  const [requests, setRequests] = useState<MaterialRequest[]>(initialRequests);
+  const requests = initialRequests;
   const [activeTab, setActiveTab] = useState<"PENDING" | "IN_PROGRESS" | "COMPLETED">("PENDING");
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   
-  // HYDRATION FIX: Store the current time in state, and only set it after mount
   const [currentTime, setCurrentTime] = useState(0);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setCurrentTime(Date.now());
     }, 0);
-
     return () => window.clearTimeout(timeoutId);
   }, []);
 
-  // Filter requests based on the active tab
   const filteredRequests = requests.filter((req) => {
     if (activeTab === "PENDING") return req.status === "PENDING";
     if (activeTab === "IN_PROGRESS") return req.status === "IN_PROGRESS";
     return req.status === "DELIVERED" || req.status === "REJECTED";
   });
 
-  // Mock function to handle status updates
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     setIsUpdating(id);
-    
     try {
-      // In production, call your Server Action here to update DB
-      setTimeout(() => {
-        setRequests((prev) => 
-          prev.map((req) => req.id === id ? { ...req, status: newStatus } : req)
-        );
-        setIsUpdating(null);
-        router.refresh();
-      }, 800);
-      
-    } catch (error) {
-      console.error("Failed to update status", error);
+      await updateCommissionStatus(id, newStatus); 
+      setIsUpdating(null);
+      router.refresh(); // FIX: Tells UI to reflect the new status
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to update status";
+      alert(message);
       setIsUpdating(null);
     }
   };
 
+  const handleFileUploadAndDelivery = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !activeUploadId) return;
+
+    setIsUpdating(activeUploadId);
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${activeUploadId}-${Date.now()}.${fileExt}`;
+      
+      const { data, error: uploadError } = await supabase.storage
+        .from('commissions')
+        .upload(fileName, file);
+
+      if (uploadError) throw new Error("Failed to upload file. Please try again.");
+
+      await updateCommissionStatus(activeUploadId, "DELIVERED");
+      alert("File delivered successfully! Escrow funds have been released to your wallet.");
+      router.refresh(); // FIX: Tells UI to reflect the delivery
+      
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "An error occurred";
+      alert(message);
+    } finally {
+      setIsUpdating(null);
+      setActiveUploadId(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const triggerFileInput = (id: string) => {
+    setActiveUploadId(id);
+    fileInputRef.current?.click();
+  };
+
   return (
     <div>
-      {/* Tab Navigation */}
+      <input 
+        type="file" 
+        ref={fileInputRef}
+        className="hidden" 
+        accept=".pdf,.zip,.doc,.docx"
+        onChange={handleFileUploadAndDelivery} 
+      />
+
       <div className="flex space-x-2 border-b border-slate-200 mb-8 overflow-x-auto hide-scrollbar">
         {(["PENDING", "IN_PROGRESS", "COMPLETED"] as const).map((tab) => (
           <button
@@ -82,7 +118,6 @@ export default function CommissionsBoard({ initialRequests }: { initialRequests:
             {tab === "IN_PROGRESS" && "Active Work"}
             {tab === "COMPLETED" && "History"}
             
-            {/* Notification Badge for New Requests */}
             {tab === "PENDING" && requests.some(r => r.status === "PENDING") && (
               <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-[10px] font-black text-white bg-rose-500 rounded-full">
                 {requests.filter(r => r.status === "PENDING").length}
@@ -92,17 +127,14 @@ export default function CommissionsBoard({ initialRequests }: { initialRequests:
         ))}
       </div>
 
-      {/* Requests Grid */}
       {filteredRequests.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredRequests.map((request) => {
-            // PURE CALCULATION: Check if deadline is within 48 hours using our safely mounted state
             const isUrgent = currentTime > 0 && new Date(request.deadline).getTime() < currentTime + (86400000 * 2);
 
             return (
               <div key={request.id} className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200 flex flex-col h-full relative overflow-hidden transition-all hover:shadow-md">
                 
-                {/* Status & Price Header */}
                 <div className="flex justify-between items-start mb-6 pb-6 border-b border-slate-100">
                   <div>
                     <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider mb-2 ${
@@ -124,7 +156,6 @@ export default function CommissionsBoard({ initialRequests }: { initialRequests:
                   </div>
                 </div>
 
-                {/* Details & Description */}
                 <div className="grow mb-8">
                   <div className="flex flex-wrap gap-y-4 gap-x-8 mb-6">
                     <div>
@@ -138,7 +169,6 @@ export default function CommissionsBoard({ initialRequests }: { initialRequests:
                     </div>
                     <div>
                       <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Deadline</p>
-                      {/* Urgency Color applied purely here */}
                       <p className={`text-sm font-bold flex items-center ${isUrgent ? 'text-rose-600' : 'text-slate-900'}`}>
                         <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                         {new Date(request.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -154,7 +184,6 @@ export default function CommissionsBoard({ initialRequests }: { initialRequests:
                   </div>
                 </div>
 
-                {/* Action Buttons based on Status */}
                 <div className="mt-auto pt-6 border-t border-slate-100">
                   {request.status === "PENDING" && (
                     <div className="grid grid-cols-2 gap-3">
@@ -168,21 +197,32 @@ export default function CommissionsBoard({ initialRequests }: { initialRequests:
                       <button 
                         onClick={() => handleStatusUpdate(request.id, "IN_PROGRESS")}
                         disabled={isUpdating === request.id}
-                        className="px-4 py-3.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors text-sm shadow-md"
+                        className="px-4 py-3.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors text-sm shadow-md flex justify-center items-center"
                       >
-                        {isUpdating === request.id ? "Accepting..." : "Accept Request"}
+                        {isUpdating === request.id ? (
+                          <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        ) : "Accept Request"}
                       </button>
                     </div>
                   )}
 
                   {request.status === "IN_PROGRESS" && (
                     <button 
-                      onClick={() => handleStatusUpdate(request.id, "DELIVERED")}
+                      onClick={() => triggerFileInput(request.id)}
                       disabled={isUpdating === request.id}
                       className="w-full flex justify-center items-center px-4 py-3.5 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-400 transition-colors text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)]"
                     >
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                      {isUpdating === request.id ? "Processing..." : "Upload & Deliver Material"}
+                      {isUpdating === request.id ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                          Upload & Deliver Material
+                        </>
+                      )}
                     </button>
                   )}
 
@@ -195,7 +235,7 @@ export default function CommissionsBoard({ initialRequests }: { initialRequests:
 
                   {request.status === "REJECTED" && (
                     <div className="w-full text-center px-4 py-3.5 bg-slate-100 text-slate-500 font-bold rounded-xl border border-slate-200 text-sm">
-                      Declined / Cancelled
+                      Declined / Refunded
                     </div>
                   )}
                 </div>

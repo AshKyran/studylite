@@ -56,6 +56,10 @@ model User {
   studentRequests MaterialRequest[] @relation("StudentRequests")
   tutorRequests   MaterialRequest[] @relation("TutorRequests")
 
+  communityQuestions CommunityQuestion[] @relation("UserCommunityQuestions")
+  communityAnswers   CommunityAnswer[]   @relation("UserCommunityAnswers")
+  transactions    Transaction[] @relation("UserTransactions") // ADD THIS LINE
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -81,6 +85,7 @@ model Subject {
   notes    Note[]
   projects Project[] // NEW
   exams    Exam[]
+  communityQuestions CommunityQuestion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -243,6 +248,7 @@ model MaterialRequest {
   deadline    DateTime
   offerAmount Int // How much the student is paying
   status      String   @default("PENDING") // PENDING, IN_PROGRESS, DELIVERED, REJECTED
+  fileUrl     String?  
 
   // Relations
   studentId String
@@ -253,4 +259,71 @@ model MaterialRequest {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// PUBLIC Q&A COMMUNITY HUB
+// ==========================================
+
+model CommunityQuestion {
+  id          String   @id @default(cuid())
+  title       String
+  body        String   @db.Text
+  isResolved  Boolean  @default(false)
+  views       Int      @default(0)
+
+  // Relations
+  authorId    String
+  author      User     @relation("UserCommunityQuestions", fields: [authorId], references: [id], onDelete: Cascade)
+  
+  subjectId   String?  
+  subject     Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+
+  answers     CommunityAnswer[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([subjectId])
+  @@index([authorId])
+}
+
+model CommunityAnswer {
+  id          String   @id @default(cuid())
+  body        String   @db.Text
+  isAccepted  Boolean  @default(false) // If the student marks it as the correct answer
+  upvotes     Int      @default(0)
+
+  // Relations
+  authorId    String
+  author      User     @relation("UserCommunityAnswers", fields: [authorId], references: [id], onDelete: Cascade)
+
+  questionId  String
+  question    CommunityQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([questionId])
+  @@index([authorId])
+}
+
+// ==========================================
+// FINANCIAL TRANSACTIONS (Audit Trail & Security)
+// ==========================================
+
+model Transaction {
+  id          String   @id @default(cuid())
+  reference   String   @unique // CRITICAL: Prevents double-spend replay attacks
+  amount      Float
+  type        String   // e.g., "TOP_UP", "COMMISSION_PAYOUT", "REFUND"
+  description String?
+  
+  // Relations
+  userId      String
+  user        User     @relation("UserTransactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
 }

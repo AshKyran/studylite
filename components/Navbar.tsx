@@ -9,7 +9,7 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
-  // Handle scroll effect for the glassmorphism header
+  // Handle scroll effect for glassmorphism and dynamic text color
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -19,15 +19,17 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
   }, []);
 
   // Close mobile menu when route changes
-// Close mobile menu when route changes
   useEffect(() => {
     const closeTimer = setTimeout(() => {
       setIsMobileMenuOpen(false);
     }, 0);
     return () => clearTimeout(closeTimer);
   }, [pathname]);
-  // Do not render this public navbar inside the authenticated dashboard
-  if (pathname?.startsWith("/dashboard")) {
+  
+  
+  // PRODUCTION FIX: Hide on Dashboard and Auth routes
+  const hiddenRoutes = ["/dashboard","/explore", "/login", "/register", "/forgot-password"];
+  if (pathname && hiddenRoutes.some(route => pathname.startsWith(route))) {
     return null;
   }
 
@@ -39,41 +41,35 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
     { name: "Research", href: "/research" },
   ];
 
+  // Dynamic colors based on scroll position (fixes the hidden text bug on the dark hero)
+  const navBgClass = scrolled ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-200 py-4" : "bg-transparent py-6";
+  const textColorClass = scrolled ? "text-slate-600 hover:text-slate-900" : "text-slate-300 hover:text-white";
+  const brandColorClass = scrolled ? "text-slate-900" : "text-white";
+
   return (
-    <nav 
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        scrolled 
-          ? "bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm" 
-          : "bg-transparent border-b border-transparent"
-      }`}
-    >
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${navBgClass}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center">
           
           {/* Logo */}
           <div className="shrink-0 flex items-center">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-md shadow-blue-600/20 group-hover:scale-105 transition-transform">
-                <span className="text-white font-bold text-lg leading-none">S</span>
-              </div>
-              <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                Studylite<span className="text-blue-600">.</span>
-              </span>
+            <Link href="/" className={`text-2xl font-black tracking-tight transition-colors ${brandColorClass}`}>
+              Studylite<span className="text-indigo-500">.</span>
             </Link>
           </div>
 
-          {/* Desktop Navigation Links */}
-          <div className="hidden lg:flex lg:items-center lg:space-x-8">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex md:items-center md:space-x-8">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`text-sm font-semibold transition-colors ${
+                  className={`text-sm font-bold transition-colors ${
                     isActive 
-                      ? "text-blue-600" 
-                      : "text-slate-600 hover:text-slate-900"
+                      ? (scrolled ? "text-indigo-600" : "text-indigo-400") 
+                      : textColorClass
                   }`}
                 >
                   {link.name}
@@ -82,70 +78,63 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
             })}
           </div>
 
-          {/* Desktop Auth Buttons */}
-          <div className="hidden lg:flex lg:items-center lg:space-x-4">
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center space-x-4">
             {isLoggedIn ? (
               <Link
                 href="/dashboard"
-                className="px-6 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors shadow-md"
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-all"
               >
-                Go to Dashboard
+                Dashboard
               </Link>
             ) : (
               <>
                 <Link
                   href="/login"
-                  className="text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors px-3 py-2"
+                  className={`text-sm font-bold transition-colors ${scrolled ? "text-slate-700 hover:text-slate-900" : "text-slate-300 hover:text-white"}`}
                 >
-                  Sign in
+                  Sign In
                 </Link>
                 <Link
                   href="/register"
-                  className="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-md shadow-blue-600/20"
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-all"
                 >
-                  Create Account
+                  Get Started
                 </Link>
               </>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex items-center lg:hidden">
+          {/* Mobile menu button */}
+          <div className="flex items-center md:hidden">
             <button
-              type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none transition-colors"
-              aria-expanded={isMobileMenuOpen}
+              className={`inline-flex items-center justify-center p-2 rounded-md focus:outline-none transition-colors ${brandColorClass}`}
             >
               <span className="sr-only">Open main menu</span>
-              <div className="relative w-6 h-5 flex flex-col justify-between">
-                <span className={`block w-full h-0.5 bg-current rounded-full transition-transform duration-300 ${isMobileMenuOpen ? "translate-y-2.5 rotate-45" : ""}`} />
-                <span className={`block w-full h-0.5 bg-current rounded-full transition-opacity duration-300 ${isMobileMenuOpen ? "opacity-0" : ""}`} />
-                <span className={`block w-full h-0.5 bg-current rounded-full transition-transform duration-300 ${isMobileMenuOpen ? "-translate-y-2 -rotate-45" : ""}`} />
-              </div>
+              {isMobileMenuOpen ? (
+                <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              ) : (
+                <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+              )}
             </button>
           </div>
-          
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
-      <div 
-        className={`lg:hidden fixed inset-x-0 top-20 bg-white border-b border-slate-200 shadow-2xl transition-all duration-300 ease-in-out origin-top ${
-          isMobileMenuOpen ? "opacity-100 scale-y-100 visible" : "opacity-0 scale-y-95 invisible"
-        }`}
-      >
-        <div className="px-4 pt-4 pb-6 space-y-2 h-[calc(100vh-5rem)] overflow-y-auto">
-          <div className="flex flex-col space-y-1">
+      {/* Mobile Menu Panel */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-white border-b border-slate-200 shadow-xl absolute w-full left-0 top-full">
+          <div className="px-4 pt-2 pb-6 space-y-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`block px-4 py-3 rounded-xl text-base font-semibold transition-colors ${
+                  className={`block px-4 py-3 rounded-xl text-base font-bold ${
                     isActive 
-                      ? "bg-blue-50 text-blue-700" 
+                      ? "bg-indigo-50 text-indigo-700" 
                       : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
                   }`}
                 >
@@ -153,35 +142,35 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
                 </Link>
               );
             })}
-          </div>
-          
-          <div className="pt-6 mt-6 border-t border-slate-100 flex flex-col space-y-3">
-            {isLoggedIn ? (
-              <Link
-                href="/dashboard"
-                className="w-full flex justify-center items-center px-4 py-3.5 border border-transparent rounded-xl shadow-sm text-base font-bold text-white bg-slate-900 hover:bg-slate-800"
-              >
-                Go to Dashboard
-              </Link>
-            ) : (
-              <>
+            
+            <div className="pt-6 mt-6 border-t border-slate-100 flex flex-col space-y-3 px-2">
+              {isLoggedIn ? (
                 <Link
-                  href="/register"
-                  className="w-full flex justify-center items-center px-4 py-3.5 border border-transparent rounded-xl shadow-md text-base font-bold text-white bg-blue-600 hover:bg-blue-700"
+                  href="/dashboard"
+                  className="w-full flex justify-center items-center px-4 py-3.5 rounded-xl shadow-sm text-base font-bold text-white bg-slate-900 hover:bg-slate-800"
                 >
-                  Create Free Account
+                  Go to Dashboard
                 </Link>
-                <Link
-                  href="/login"
-                  className="w-full flex justify-center items-center px-4 py-3.5 border border-slate-200 rounded-xl text-base font-bold text-slate-700 bg-white hover:bg-slate-50"
-                >
-                  Sign In
-                </Link>
-              </>
-            )}
+              ) : (
+                <>
+                  <Link
+                    href="/register"
+                    className="w-full flex justify-center items-center px-4 py-3.5 rounded-xl shadow-md text-base font-bold text-white bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    Create Free Account
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="w-full flex justify-center items-center px-4 py-3.5 border border-slate-200 rounded-xl text-base font-bold text-slate-700 bg-white hover:bg-slate-50"
+                  >
+                    Sign In
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 }

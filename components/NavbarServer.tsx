@@ -2,11 +2,16 @@ import { cookies } from "next/headers";
 import Navbar from "./Navbar";
 
 export default async function NavbarServer() {
-  // The Next 16 cookie check lives HERE, completely isolated from the layout.
-  const cookieStore = await cookies();
-  const token = cookieStore.get("studylite_session")?.value;
-  const isLoggedIn = !!token;
+  let isLoggedIn = false;
 
-  // We pass the result into your exact Client Component
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("studylite_session")?.value;
+    isLoggedIn = !!token;
+  } catch (error) {
+    isLoggedIn = false;
+  }
+
+  // Pass the result strictly into the Client Component
   return <Navbar isLoggedIn={isLoggedIn} />;
 }
