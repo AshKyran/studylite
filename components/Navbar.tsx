@@ -25,19 +25,12 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
     }, 0);
     return () => clearTimeout(closeTimer);
   }, [pathname]);
-  
-  
-  // PRODUCTION FIX: Hide on Dashboard and Auth routes
-  const hiddenRoutes = ["/dashboard","/explore", "/login", "/register", "/forgot-password"];
-  if (pathname && hiddenRoutes.some(route => pathname.startsWith(route))) {
-    return null;
-  }
 
   const navLinks = [
     { name: "Marketplace", href: "/explore" },
     { name: "Find a Tutor", href: "/tutors" },
-    { name: "Online Exams", href: "/exams" },
-    { name: "Q&A", href: "/qa" },
+    { name: "Online Exams", href: "/tests" },
+    { name: "Q&A", href: "/community" },
     { name: "Research", href: "/research" },
   ];
 
@@ -45,6 +38,22 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
   const navBgClass = scrolled ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-200 py-4" : "bg-transparent py-6";
   const textColorClass = scrolled ? "text-slate-600 hover:text-slate-900" : "text-slate-300 hover:text-white";
   const brandColorClass = scrolled ? "text-slate-900" : "text-white";
+  
+   if (
+    pathname?.startsWith("/dashboard") || 
+    pathname?.startsWith("/explore") || 
+    pathname?.startsWith("/tutors") ||
+    pathname?.startsWith("/admin") ||
+    pathname?.startsWith("/community") ||
+    pathname?.startsWith("/research") ||
+    pathname?.startsWith("/tests") ||
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/register") ||
+    pathname?.startsWith("/forgot-password")
+    
+  ) {
+    return null;
+  }
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${navBgClass}`}>

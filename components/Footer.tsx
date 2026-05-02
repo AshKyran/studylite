@@ -7,11 +7,6 @@ export default function Footer() {
   const pathname = usePathname();
   const currentYear = new Date().getFullYear();
 
-  // PRODUCTION FIX: Hide on Dashboard and Auth routes
-  const hiddenRoutes = ["/dashboard", "/login", "/register", "/forgot-password"];
-  if (pathname && hiddenRoutes.some(route => pathname.startsWith(route))) {
-    return null;
-  }
 
   return (
     <footer className="bg-slate-950 border-t border-slate-900" aria-labelledby="footer-heading">
