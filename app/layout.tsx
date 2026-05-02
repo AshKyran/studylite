@@ -83,7 +83,7 @@ export default async function RootLayout({
           <NavbarServer />
       </Suspense>
         
-        <main className="grow flex flex-col relative w-full mt-20"> 
+        <main className="grow flex flex-col relative w-full">
           {children}
         </main>
 
