@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,9 +11,14 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL!,
+});
+
 const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
+    adapter,
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 
@@ -44,19 +50,15 @@ export async function GET(request: Request) {
           const nameParts = fullName.trim().split(/\s+/).filter(Boolean);
 
           const firstName =
-            user.user_metadata?.first_name ||
-            nameParts[0] ||
-            "Student";
+            user.user_metadata?.first_name || nameParts[0] || "Student";
 
           const lastName =
-            user.user_metadata?.last_name ||
-            nameParts.slice(1).join(" ") ||
-            "";
+            user.user_metadata?.last_name || nameParts.slice(1).join(" ") || "";
 
           await prisma.user.create({
             data: {
               id: user.id,
-              email: user.email ?? "",
+              email: user.email!,
               firstName,
               lastName,
               role: "STUDENT",
