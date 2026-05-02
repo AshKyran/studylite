@@ -16,7 +16,10 @@ export default function UploadNoteForm({ subjects, userId }: { subjects: Subject
   
   const router = useRouter();
   const supabase = createClient();
-  
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("No browser session found");
+    
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("");
   const [error, setError] = useState("");
