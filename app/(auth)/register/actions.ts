@@ -1,26 +1,25 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server"; //[cite: 12]
-// FIX 1: Import your global Prisma client to prevent connection exhaustion
+import { createClient } from "@/utils/supabase/server"; 
 import prisma from "@/lib/prisma"; 
-import { redirect } from "next/navigation"; //[cite: 12]
+import { redirect } from "next/navigation"; 
 
-export async function registerUser(formData: FormData) { //[cite: 12]
+export async function registerUser(formData: FormData) { 
   const firstName = formData.get("firstName") as string;
   const lastName = formData.get("lastName") as string;
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   
-  // FIX 2: Strict Runtime Role Validation
+  // Strict Runtime Role Validation
   const rawRole = formData.get("role") as string;
   const allowedRoles = ["STUDENT", "TUTOR", "RESEARCHER"];
   // Fallback to STUDENT if someone tries to inject an invalid/admin role
   const role = allowedRoles.includes(rawRole) ? rawRole : "STUDENT";
 
-  const supabase = await createClient(); //[cite: 12]
+  const supabase = await createClient(); 
 
   // 1. Register the user with Supabase Auth
-  const { data: authData, error: authError } = await supabase.auth.signUp({ //[cite: 12]
+  const { data: authData, error: authError } = await supabase.auth.signUp({ 
     email,
     password,
     options: {
@@ -32,18 +31,18 @@ export async function registerUser(formData: FormData) { //[cite: 12]
   });
 
   if (authError) {
-    return { error: authError.message }; //[cite: 12]
+    return { error: authError.message }; 
   }
 
   if (!authData.user) {
-    return { error: "An unexpected error occurred during signup." }; //[cite: 12]
+    return { error: "An unexpected error occurred during signup." }; 
   }
 
   try {
     // 2. Sync the Supabase Auth User with your Prisma Public Profile 
     await prisma.user.create({
       data: {
-        id: authData.user.id, // CRITICAL: Links Prisma to Supabase[cite: 12]
+        id: authData.user.id, // CRITICAL: Links Prisma to Supabase
         email: authData.user.email!,
         firstName,
         lastName,
@@ -51,16 +50,44 @@ export async function registerUser(formData: FormData) { //[cite: 12]
       },
     });
   } catch (dbError) {
-    console.error("Database sync error:", dbError); //[cite: 12]
+    console.error("Database sync error:", dbError); 
     
-    // FIX 3: Rollback Strategy
+    // Rollback Strategy
     // If the database fails, we delete the auth user so they aren't stuck in limbo.
-    // Note: requires the Supabase Service Role Key to bypass RLS, or you can use the standard admin client if configured.
     await supabase.auth.admin.deleteUser(authData.user.id);
     
-    return { error: "Account created, but profile setup failed. Please try again." }; //[cite: 12]
+    return { error: "Account created, but profile setup failed. Please try again." }; 
   }
 
   // 3. Redirect on success
-  redirect("/login?registered=true"); //[cite: 12]
+  redirect("/login?registered=true"); 
+}
+
+// ==========================================
+// ADDED THIS FUNCTION SO THE PAGE CAN FIND IT
+// ==========================================
+export async function loginWithGoogle() {
+  const supabase = await createClient();
+  
+  // Ensure this environment variable is set in your .env
+  const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: redirectUrl,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
+    },
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  if (data.url) {
+    redirect(data.url);
+  }
 }
