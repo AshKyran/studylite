@@ -1,8 +1,18 @@
+// app/(explore)/tests/take/[id]/TestArena.tsx
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { submitTestAttempt } from "./actions"; 
+import { toast } from "sonner";
+import { 
+  Clock, 
+  CheckCircle2, 
+  Circle, 
+  ArrowRight, 
+  Save, 
+  AlertCircle
+} from "lucide-react";
 
 // --- TYPES ---
 interface Option {
@@ -40,9 +50,7 @@ export default function TestArena({ exam, userId, previousAttempts }: TestArenaP
   const [timeLeft, setTimeLeft] = useState<number | null>(
     exam.duration ? exam.duration * 60 : null
   );
-  
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
 
   // 1. SAFE STATE REF: Ensures the auto-submit timer always grabs the latest answers 
   // without triggering constant re-renders or stale closures.
@@ -51,205 +59,202 @@ export default function TestArena({ exam, userId, previousAttempts }: TestArenaP
     answersRef.current = answers;
   }, [answers]);
 
-  // Prevent accidental double-submissions
   const hasSubmittedRef = useRef(false);
 
-  const currentQuestion = exam.questions[currentIndex];
-  const isLastQuestion = currentIndex === exam.questions.length - 1;
-  const progressPercentage = ((currentIndex + 1) / exam.questions.length) * 100;
-
-  // --- SUBMISSION LOGIC (Moved UP to fix Error 1) ---
-  const submitAnswers = useCallback(async (isAutoSubmit = false) => {
+  // --- SUBMISSION LOGIC ---
+  const submitAnswers = useCallback(async (isAutoSubmit: boolean = false) => {
     if (hasSubmittedRef.current) return;
     hasSubmittedRef.current = true;
-    
     setIsSubmitting(true);
-    
-    if (isAutoSubmit) {
-      setError("Time is up! Submitting your answers automatically...");
-    } else {
-      setError("");
-    }
+
+    const toastId = toast.loading(isAutoSubmit ? "Time's up! Auto-submitting..." : "Submitting assessment...");
 
     try {
-      // Pass the ref current state to ensure perfect accuracy
-      const result = await submitTestAttempt({ examId: exam.id, answers: answersRef.current });
-      
-      if (result.success) {
+      const payload = {
+        examId: exam.id,
+        answers: answersRef.current,
+      };
+
+      const result = await submitTestAttempt(payload);
+
+      if (result.error) {
+        toast.error(result.error, { id: toastId });
+        setIsSubmitting(false);
+        hasSubmittedRef.current = false;
+      } else {
+        toast.success("Assessment submitted successfully!", { id: toastId });
         router.push(`/explore/tests/results/${result.attemptId}`);
       }
-      
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Submission failed.");
+      toast.error("A critical error occurred. Please refresh.", { id: toastId });
       setIsSubmitting(false);
       hasSubmittedRef.current = false;
     }
   }, [exam.id, router]);
 
-
-  // --- TIMER LOGIC (Patched to fix Error 2) ---
+  // --- TIMER LOGIC ---
   useEffect(() => {
-    if (timeLeft === null) return; // Untimed exam
+  if (exam.duration === null) return;
 
-    if (timeLeft <= 0) {
-      // Placing this inside a setTimeout of 0 pushes it to the next JS event loop tick.
-      // This perfectly satisfies React's rule against synchronous state updates inside useEffect!
-      const timeoutId = setTimeout(() => {
-        submitAnswers(true);
-      }, 0);
-      return () => clearTimeout(timeoutId);
+  const timer = window.setInterval(() => {
+    setTimeLeft((prev) => {
+      // 1. Check if we've hit the end
+      if (prev !== null && prev <= 1) {
+        window.clearInterval(timer);
+        
+        // 2. Schedule the submission for the next tick
+        setTimeout(() => {
+          submitAnswers(true);
+        }, 0);
+        
+        return 0;
+      }
+      // 3. Just tick down
+      return prev !== null ? prev - 1 : null;
+    });
+  }, 1000);
+
+  // Cleanup: clear the interval if the user navigates away or component unmounts
+  return () => window.clearInterval(timer);
+}, [exam.duration, submitAnswers]); 
+
+  // --- HANDLERS ---
+  const handleOptionSelect = (questionId: string, optionId: string) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [questionId]: optionId,
+    }));
+  };
+
+  const navigateQuestion = (direction: "next" | "prev") => {
+    if (direction === "next" && currentIndex < exam.questions.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else if (direction === "prev" && currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
     }
+  };
 
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev !== null && prev > 0 ? prev - 1 : 0));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft, submitAnswers]);
-
-
-  // --- INTERACTION HANDLERS ---
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, "0");
     const s = (seconds % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   };
 
-  const selectOption = (optionId: string) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [currentQuestion.id]: optionId,
-    }));
-  };
+  const currentQuestion = exam.questions[currentIndex];
+  const isLastQuestion = currentIndex === exam.questions.length - 1;
+  const isTimeLow = timeLeft !== null && timeLeft < 300; // Under 5 minutes
 
-  const navigateQuestion = (direction: "prev" | "next") => {
-    if (direction === "prev" && currentIndex > 0) setCurrentIndex((c) => c - 1);
-    if (direction === "next" && !isLastQuestion) setCurrentIndex((c) => c + 1);
-  };
-
-
-  // --- UI RENDERING ---
   return (
-    <div className="flex flex-col min-h-screen text-slate-100">
+    <div className="flex flex-col min-h-screen text-slate-300">
       
-      {/* 1. ARENA HEADER */}
-      <header className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 shadow-xl">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white line-clamp-1">{exam.title}</h1>
-            <p className="text-sm font-medium text-slate-400">{exam.subject.name} • {exam.questions.length} Questions</p>
+      {/* HEADER: Always pinned to top */}
+      <header className="bg-slate-900 border-b border-slate-800 p-4 sm:p-6 flex items-center justify-between sticky top-0 z-50">
+        <div>
+          <h1 className="text-xl font-black text-white leading-tight truncate max-w-50 sm:max-w-md">
+            {exam.title}
+          </h1>
+          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">
+            {exam.subject.name} • {previousAttempts > 0 ? `Attempt #${previousAttempts + 1}` : "First Attempt"}
+          </p>
+        </div>
+
+        {timeLeft !== null && (
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-mono font-bold text-lg transition-colors ${
+            isTimeLow ? "bg-red-500/10 text-red-500 border border-red-500/20 animate-pulse" : "bg-slate-800 text-indigo-400 border border-slate-700"
+          }`}>
+            <Clock className="w-5 h-5" />
+            {formatTime(timeLeft)}
           </div>
-
-          {/* Dynamic Timer Badge */}
-          {timeLeft !== null && (
-            <div className={`flex items-center px-4 py-2 rounded-xl font-mono text-xl font-bold tracking-wider transition-colors ${
-              timeLeft < 60 ? "bg-red-500/20 text-red-400 animate-pulse border border-red-500/50" : "bg-slate-800 text-slate-300"
-            }`}>
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              {formatTime(timeLeft)}
-            </div>
-          )}
-        </div>
-
-        {/* Progress Bar */}
-        <div className="w-full bg-slate-800 h-1.5">
-          <div 
-            className="bg-emerald-500 h-1.5 transition-all duration-300 ease-out" 
-            style={{ width: `${progressPercentage}%` }}
-          />
-        </div>
+        )}
       </header>
 
-      {/* 2. MAIN QUESTION AREA */}
-      <main className="grow flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-3xl">
-          
-          <div className="flex justify-between items-end mb-8">
-            <span className="text-emerald-400 font-bold uppercase tracking-widest text-sm">
+      {/* MAIN STAGE */}
+      <main className="flex-1 w-full max-w-4xl mx-auto p-4 sm:p-8 flex flex-col justify-center">
+        
+        {/* Progress Tracker */}
+        <div className="mb-8">
+          <div className="flex justify-between items-end mb-2">
+            <span className="text-sm font-bold text-slate-400">
               Question {currentIndex + 1} of {exam.questions.length}
             </span>
-            <span className="text-slate-500 font-medium text-sm">
-              {currentQuestion.marks} {currentQuestion.marks === 1 ? "Mark" : "Marks"}
+            <span className="text-xs font-black bg-indigo-500/20 text-indigo-400 px-2.5 py-1 rounded-md border border-indigo-500/20">
+              {currentQuestion.marks} {currentQuestion.marks === 1 ? "Point" : "Points"}
             </span>
           </div>
+          <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-indigo-500 transition-all duration-300 ease-out"
+              style={{ width: `${((currentIndex + 1) / exam.questions.length) * 100}%` }}
+            />
+          </div>
+        </div>
 
-          <h2 className="text-2xl sm:text-3xl font-medium leading-relaxed mb-10 text-white">
+        {/* Question Card */}
+        <div className="bg-slate-900 rounded-3xl p-6 sm:p-10 border border-slate-800 shadow-2xl relative">
+          <h2 className="text-xl sm:text-2xl font-medium text-white mb-8 leading-relaxed">
             {currentQuestion.text}
           </h2>
 
           <div className="space-y-4">
-            {currentQuestion.options.map((option, idx) => {
+            {currentQuestion.options.map((option) => {
               const isSelected = answers[currentQuestion.id] === option.id;
-              const labels = ["A", "B", "C", "D", "E"];
               
               return (
                 <button
                   key={option.id}
-                  onClick={() => selectOption(option.id)}
-                  className={`w-full flex items-center p-5 rounded-2xl border-2 text-left transition-all duration-200 ${
+                  onClick={() => handleOptionSelect(currentQuestion.id, option.id)}
+                  disabled={isSubmitting}
+                  className={`w-full flex items-center p-4 rounded-2xl border-2 text-left transition-all group ${
                     isSelected 
-                      ? "bg-emerald-900/30 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.15)]" 
-                      : "bg-slate-900 border-slate-800 hover:border-slate-600 hover:bg-slate-800/50"
+                      ? "border-indigo-500 bg-indigo-500/10" 
+                      : "border-slate-800 bg-slate-800/50 hover:border-slate-600 hover:bg-slate-800"
                   }`}
                 >
-                  <span className={`shrink-0 flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold mr-5 transition-colors ${
-                    isSelected ? "bg-emerald-500 text-slate-950" : "bg-slate-800 text-slate-400"
-                  }`}>
-                    {labels[idx]}
-                  </span>
-                  <span className={`text-lg sm:text-xl font-medium ${isSelected ? "text-white" : "text-slate-300"}`}>
+                  <div className={`shrink-0 mr-4 transition-colors ${isSelected ? "text-indigo-400" : "text-slate-500 group-hover:text-slate-400"}`}>
+                    {isSelected ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
+                  </div>
+                  <span className={`text-base sm:text-lg font-medium transition-colors ${isSelected ? "text-indigo-50" : "text-slate-300 group-hover:text-white"}`}>
                     {option.text}
                   </span>
                 </button>
               );
             })}
           </div>
-
         </div>
+
       </main>
 
-      {/* 3. NAVIGATION FOOTER */}
-      <footer className="bg-slate-900 border-t border-slate-800 py-6 px-4 sm:px-8">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+      {/* FOOTER CONTROLS */}
+      <footer className="bg-slate-900 border-t border-slate-800 p-4 sm:p-6 mt-auto">
+        <div className="max-w-4xl mx-auto flex flex-col-reverse sm:flex-row justify-between items-center gap-4">
           
           <button
             onClick={() => navigateQuestion("prev")}
             disabled={currentIndex === 0 || isSubmitting}
-            className="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-slate-400 bg-slate-800 hover:bg-slate-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
           >
             &larr; Previous
           </button>
-
-          {error && <div className="text-red-400 font-medium text-sm text-center">{error}</div>}
 
           {!isLastQuestion ? (
             <button
               onClick={() => navigateQuestion("next")}
               disabled={isSubmitting}
-              className="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-slate-900 bg-slate-100 hover:bg-white transition-colors shadow-lg"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-black text-slate-900 bg-indigo-400 hover:bg-indigo-300 transition-all active:scale-95"
             >
-              Next Question &rarr;
+              Next Question <ArrowRight className="w-5 h-5" />
             </button>
           ) : (
             <button
               onClick={() => submitAnswers(false)}
               disabled={isSubmitting}
-              className="w-full sm:w-auto px-10 py-3 rounded-xl font-black text-slate-900 bg-emerald-500 hover:bg-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-10 py-3 rounded-xl font-black text-slate-900 bg-emerald-500 hover:bg-emerald-400 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(16,185,129,0.2)]"
             >
-              {isSubmitting ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5 text-slate-900" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                  Grading...
-                </span>
-              ) : (
-                "Submit Assessment"
-              )}
+              {isSubmitting ? "Processing..." : <><Save className="w-5 h-5" /> Submit Assessment</>}
             </button>
           )}
-
         </div>
       </footer>
-
     </div>
   );
 }

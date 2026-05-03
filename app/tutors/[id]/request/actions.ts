@@ -1,3 +1,4 @@
+// app/tutors/[id]/request/actions.ts
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
@@ -17,7 +18,7 @@ export async function submitMaterialRequest(data: RequestPayload) {
   const { data: { user: authUser }, error } = await supabase.auth.getUser();
 
   if (error || !authUser) {
-    throw new Error("You must be logged in to make a request.");
+    return { error: "You must be logged in to make a request." };
   }
 
   // Calculate the total required to put into Escrow
@@ -25,13 +26,18 @@ export async function submitMaterialRequest(data: RequestPayload) {
   const totalRequired = data.offerAmount + platformFee;
 
   try {
-    // 1. Validate the user's wallet balance (Assuming you have a Wallet model hooked to the User)
+    // 1. Validate the user's wallet balance
     const wallet = await prisma.wallet.findUnique({
       where: { userId: authUser.id }
     });
 
-    if (!wallet || wallet.balance < totalRequired) {
-      throw new Error(`Insufficient funds. Please top up your wallet. You need KES ${totalRequired.toLocaleString()}`);
+    // UPGRADE: Handle Prisma Decimal securely for comparison
+    const currentBalance = wallet ? Number(wallet.balance) : 0;
+
+    if (currentBalance < totalRequired) {
+      return { 
+        error: `Insufficient funds. You need KES ${totalRequired.toLocaleString()} but your balance is KES ${currentBalance.toLocaleString()}. Please top up your wallet.` 
+      };
     }
 
     // 2. Perform a Database Transaction (Ensure data consistency)
@@ -56,6 +62,17 @@ export async function submitMaterialRequest(data: RequestPayload) {
           tutorId: data.tutorId,
         }
       });
+
+      // C. UPGRADE: Log the escrow transaction so the student sees where their money went
+      await tx.transaction.create({
+        data: {
+          userId: authUser.id,
+          amount: totalRequired,
+          type: "ESCROW_DEPOSIT",
+          reference: `ESCROW_REQ_${Date.now()}_${authUser.id.substring(0,5)}`,
+          description: `Escrow deposit for custom material: ${data.title}`
+        }
+      });
       
       // Note: We DO NOT add money to the Tutor's wallet yet! 
       // That happens ONLY when the status changes to "DELIVERED".
@@ -65,7 +82,9 @@ export async function submitMaterialRequest(data: RequestPayload) {
 
   } catch (err: unknown) {
     console.error("Escrow/Request Error:", err);
-    const errorMessage = err instanceof Error ? err.message : "An error occurred while processing your request.";
-    throw new Error(errorMessage);
+    if (err instanceof Error) {
+      return { error: err.message };
+    }
+    return { error: "An unexpected error occurred while processing your request." };
   }
 }

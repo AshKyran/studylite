@@ -1,22 +1,35 @@
+// app/(explore)/tests/results/[attemptId]/page.tsx
 import { createClient } from "@/utils/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import prisma from "@/lib/prisma";
+import { 
+  Award, 
+  AlertCircle, 
+  BookOpen, 
+  CheckCircle2, 
+  Lightbulb, 
+  ArrowLeft 
+} from "lucide-react";
 
-export default async function ResultsPage({
-  params,
-}: {
-  params: { attemptId: string };
-}) {
-  // 1. Strict Authentication
+export const dynamic = "force-dynamic";
+
+export default async function ResultsPage(props: { params: Promise<{ attemptId: string }> }) {
+  // UPGRADE: Await params for Next.js 15
+  const resolvedParams = await props.params;
+  const attemptId = resolvedParams.attemptId;
+
+  // 1. Strict Authentication & Error Handling
   const supabase = await createClient();
-  const { data: { user: authUser } } = await supabase.auth.getUser();
+  const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
 
-  if (!authUser) redirect("/login");
+  if (authError || !authUser) {
+    redirect("/login");
+  }
 
   // 2. Fetch the Attempt AND the full Exam Marking Scheme
   const attempt = await prisma.examAttempt.findUnique({
-    where: { id: params.attemptId },
+    where: { id: attemptId },
     include: {
       exam: {
         include: {
@@ -33,7 +46,7 @@ export default async function ResultsPage({
 
   // SECURITY: Only the student who took the test can view these results
   if (attempt.userId !== authUser.id) {
-    redirect("/dashboard?error=unauthorized_result");
+    redirect("/explore/tests?error=unauthorized_result");
   }
 
   // 3. Calculate Grade Metrics
@@ -42,101 +55,109 @@ export default async function ResultsPage({
   let gradeColor = "text-emerald-500";
   let bgGlow = "shadow-[0_0_40px_rgba(16,185,129,0.2)]";
   let feedbackMessage = "Excellent work! You have a solid grasp of this material.";
+  let GradeIcon = Award;
   
   if (percentage < 50) {
     gradeColor = "text-rose-500";
-    bgGlow = "shadow-[0_0_40px_rgba(225,29,72,0.2)]";
-    feedbackMessage = "Needs improvement. Review the marking scheme below carefully.";
+    bgGlow = "shadow-[0_0_40px_rgba(244,63,94,0.2)]";
+    feedbackMessage = "Needs review. We recommend revisiting the core concepts before retaking.";
+    GradeIcon = AlertCircle;
   } else if (percentage < 75) {
     gradeColor = "text-amber-500";
     bgGlow = "shadow-[0_0_40px_rgba(245,158,11,0.2)]";
-    feedbackMessage = "Good job! A little more review and you'll master this.";
+    feedbackMessage = "Good effort! Review the explanations below to perfect your score.";
+    GradeIcon = BookOpen;
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans pb-24">
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-indigo-200 selection:text-indigo-900 pb-24">
       
-      {/* HEADER: Score Overview */}
-      <header className="bg-slate-950 pt-20 pb-16 px-4 sm:px-6 relative overflow-hidden">
-        <div className="max-w-4xl mx-auto relative z-10 flex flex-col items-center text-center">
-          <p className="text-emerald-400 font-bold uppercase tracking-widest text-sm mb-4">
-            Assessment Complete
-          </p>
-          <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-2">
-            {attempt.exam.title}
-          </h1>
-          <p className="text-slate-400 font-medium mb-12">
-            {attempt.exam.subject.name} • Completed on {new Date(attempt.completedAt).toLocaleDateString()}
-          </p>
-
-          {/* Big Score Circle */}
-          <div className={`w-48 h-48 md:w-56 md:h-56 rounded-full bg-slate-900 border-8 border-slate-800 flex flex-col items-center justify-center mb-6 ${bgGlow} transition-shadow duration-700`}>
-            <span className={`text-5xl md:text-7xl font-black ${gradeColor}`}>
-              {percentage}%
-            </span>
-            <span className="text-slate-400 font-bold mt-2">
-              {attempt.score} / {attempt.maxScore} Marks
-            </span>
+      {/* Dynamic Header based on Score */}
+      <header className="bg-slate-900 border-b border-slate-800 pt-16 pb-24 px-4 sm:px-6 relative overflow-hidden">
+        <div className="max-w-4xl mx-auto relative z-10 text-center">
+          <div className="inline-flex items-center justify-center p-4 rounded-full bg-slate-800 border border-slate-700 mb-6 shadow-sm">
+            <GradeIcon className={`w-12 h-12 ${gradeColor}`} />
           </div>
-
-          <p className="text-lg text-slate-300 font-medium max-w-lg">
+          
+          <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight mb-4">
+            {attempt.score} <span className="text-2xl sm:text-4xl text-slate-500">/ {attempt.maxScore}</span>
+          </h1>
+          
+          <div className={`inline-block px-6 py-2 rounded-full font-black text-xl mb-6 bg-slate-950 border border-slate-800 ${gradeColor} ${bgGlow}`}>
+            {percentage}% Score
+          </div>
+          
+          <p className="text-lg text-slate-400 font-medium max-w-lg mx-auto">
             {feedbackMessage}
           </p>
         </div>
       </header>
 
-      {/* BODY: Marking Scheme Review */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 -mt-8 relative z-20">
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-6 sm:p-10 mb-8">
-          
-          <h2 className="text-2xl font-black text-slate-900 mb-8 flex items-center">
-            <svg className="w-6 h-6 mr-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            Official Answer Key & Review
-          </h2>
+      {/* Main Content Stage */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 -mt-10 relative z-20 space-y-8">
+        
+        {/* Info Card */}
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">{attempt.exam.title}</h2>
+            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mt-1">
+              {attempt.exam.subject.name} • Marking Scheme
+            </p>
+          </div>
+          <Link 
+            href={`/explore/tests/take/${attempt.examId}`}
+            className="px-6 py-3 bg-indigo-50 text-indigo-700 font-bold rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-colors w-full sm:w-auto text-center"
+          >
+            Retake Assessment
+          </Link>
+        </div>
 
-          <div className="space-y-10">
-            {attempt.exam.questions.map((question, qIndex) => (
-              <div key={question.id} className="border-b border-slate-100 pb-10 last:border-0 last:pb-0">
+        {/* Detailed Marking Scheme */}
+        <div className="space-y-6">
+          <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest pl-2">
+            Detailed Review
+          </h3>
+          
+          <div className="space-y-8">
+            {attempt.exam.questions.map((question, index) => (
+              <div key={question.id} className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
                 
-                {/* Question Details */}
-                <div className="flex justify-between items-start mb-4">
-                  <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">
-                    Question {qIndex + 1}
-                  </span>
-                  <span className="text-sm font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                    {question.marks} Marks
+                {/* Question Header */}
+                <div className="flex justify-between items-start mb-6">
+                  <h3 className="text-lg font-bold text-slate-900 leading-relaxed pr-4">
+                    <span className="text-slate-400 mr-2">{index + 1}.</span>
+                    {question.text}
+                  </h3>
+                  <span className="shrink-0 text-xs font-black bg-slate-100 text-slate-500 px-3 py-1.5 rounded-lg border border-slate-200">
+                    {question.marks} pts
                   </span>
                 </div>
-                
-                <h3 className="text-lg sm:text-xl font-medium text-slate-900 mb-6 leading-relaxed">
-                  {question.text}
-                </h3>
 
                 {/* Options List */}
-                <div className="space-y-3 mb-6 pl-0 sm:pl-4">
-                  {question.options.map((option, oIndex) => {
-                    const labels = ["A", "B", "C", "D", "E"];
+                <div className="space-y-3">
+                  {question.options.map((option) => {
+                    const isCorrect = option.isCorrect;
                     return (
                       <div 
                         key={option.id}
-                        className={`flex items-center p-4 rounded-xl border-2 transition-colors ${
-                          option.isCorrect 
-                            ? "bg-emerald-50 border-emerald-500 shadow-sm" 
-                            : "bg-white border-slate-100 text-slate-400"
+                        className={`flex items-center p-4 rounded-2xl border-2 transition-all ${
+                          isCorrect 
+                            ? "border-emerald-500 bg-emerald-50/50" 
+                            : "border-slate-100 bg-slate-50"
                         }`}
                       >
-                        <span className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold mr-4 ${
-                          option.isCorrect ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500"
-                        }`}>
-                          {labels[oIndex]}
-                        </span>
-                        <span className={`text-base font-medium ${option.isCorrect ? "text-emerald-900" : "text-slate-500"}`}>
+                        <div className={`shrink-0 mr-4 ${isCorrect ? "text-emerald-500" : "text-slate-300"}`}>
+                          {isCorrect ? <CheckCircle2 className="w-6 h-6" /> : <div className="w-6 h-6 rounded-full border-2 border-slate-300" />}
+                        </div>
+                        <span className={`text-base font-medium ${isCorrect ? "text-emerald-900" : "text-slate-600"}`}>
                           {option.text}
                         </span>
                         
                         {/* Correct Answer Badge */}
-                        {option.isCorrect && (
-                          <span className="ml-auto text-xs font-bold text-emerald-600 uppercase tracking-widest bg-emerald-100 px-2 py-1 rounded">Correct</span>
+                        {isCorrect && (
+                          <span className="ml-auto text-xs font-bold text-emerald-600 uppercase tracking-widest bg-emerald-100 px-2.5 py-1 rounded-md">
+                            Correct
+                          </span>
                         )}
                       </div>
                     );
@@ -145,11 +166,14 @@ export default async function ResultsPage({
 
                 {/* Tutor Explanation (If provided) */}
                 {question.explanation && (
-                  <div className="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-r-xl mt-4">
-                    <h4 className="text-xs font-bold text-blue-800 uppercase tracking-widest mb-2">Tutor Explanation</h4>
-                    <p className="text-sm text-blue-900 font-medium leading-relaxed">
-                      {question.explanation}
-                    </p>
+                  <div className="bg-indigo-50 border-l-4 border-indigo-500 p-5 rounded-r-2xl mt-6 flex items-start gap-3">
+                    <Lightbulb className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-xs font-bold text-indigo-800 uppercase tracking-widest mb-1.5">Tutor Explanation</h4>
+                      <p className="text-sm text-indigo-950 font-medium leading-relaxed">
+                        {question.explanation}
+                      </p>
+                    </div>
                   </div>
                 )}
                 
@@ -160,12 +184,12 @@ export default async function ResultsPage({
         </div>
 
         {/* Back Navigation */}
-        <div className="text-center">
+        <div className="text-center pt-8">
           <Link 
             href="/explore/tests"
-            className="inline-flex items-center justify-center px-8 py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg active:scale-95"
           >
-            &larr; Back to Assessment Hub
+            <ArrowLeft className="w-5 h-5" /> Back to Assessment Hub
           </Link>
         </div>
       </main>

@@ -1,12 +1,17 @@
+// app/tutors/layout.tsx
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { 
   ShieldCheck, 
-  Search, 
   Briefcase, 
   ChevronLeft,
   GraduationCap
 } from "lucide-react";
+
+export const metadata = {
+  title: "Hire a Tutor | StudyLite",
+  description: "Find verified academic experts, researchers, and tutors.",
+};
 
 export default async function TutorsLayout({
   children,
@@ -14,17 +19,16 @@ export default async function TutorsLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
+  // Safe fetch - will return null if no session, which is perfectly fine for public directories
   const { data: { user } } = await supabase.auth.getUser();
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col selection:bg-blue-200 selection:text-blue-900">
+    <div className="min-h-screen bg-slate-50 flex flex-col selection:bg-indigo-200 selection:text-indigo-900">
       
       {/* ==========================================
           TUTOR MARKETPLACE HEADER
           ========================================== */}
-      <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
-        
-        {/* Main Top Bar */}
+      <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
           {/* Left: Brand & Back Button */}
@@ -34,61 +38,31 @@ export default async function TutorsLayout({
               <span className="hidden sm:inline">Back to Explore</span>
             </Link>
             
-            <div className="h-6 w-px bg-slate-800 hidden sm:block"></div>
+            <div className="hidden sm:block h-6 w-px bg-slate-800"></div>
             
-            <Link href="/tutors" className="flex items-center gap-2 group">
-              <div className="bg-emerald-500/10 p-1.5 rounded-lg border border-emerald-500/20 group-hover:bg-emerald-500/20 transition-colors">
-                <GraduationCap className="h-5 w-5 text-emerald-400" />
-              </div>
-              <span className="text-lg font-black text-white tracking-tight">Expert Tutors</span>
+            <Link href="/tutors" className="flex items-center gap-2 text-white group">
+              <GraduationCap className="h-6 w-6 text-indigo-500 group-hover:scale-110 transition-transform" />
+              <span className="font-black tracking-tight text-lg hidden sm:inline">Tutor Directory</span>
             </Link>
           </div>
 
-          {/* Right: Trust Badge & Profile */}
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 rounded-full border border-slate-700/50">
-              <ShieldCheck className="h-4 w-4 text-emerald-400" />
-              <span className="text-xs font-bold text-slate-300">Escrow Protected</span>
-            </div>
-
+          {/* Right: User Actions */}
+          <nav className="flex items-center gap-6">
             {user ? (
-              <Link href="/dashboard" className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-sm hover:opacity-80 transition-opacity text-sm border border-blue-500">
-                {user.email?.[0].toUpperCase()}
+              <Link 
+                href="/dashboard/requests" 
+                className="hidden sm:flex items-center gap-2 text-sm font-bold text-slate-300 hover:text-white transition-colors"
+              >
+                <Briefcase className="h-4 w-4" />
+                My Hiring Requests
               </Link>
-            ) : (
-              <Link href="/login" className="text-sm font-bold text-white bg-blue-600 px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors">
-                Sign In
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {/* ==========================================
-            SUB-NAVIGATION TABS
-            ========================================== */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex items-center gap-6 overflow-x-auto hide-scrollbar">
-            <Link 
-              href="/tutors" 
-              className="flex items-center gap-2 py-4 text-sm font-bold text-white border-b-2 border-emerald-500 whitespace-nowrap"
-            >
-              <Search className="h-4 w-4 text-emerald-400" />
-              Find a Tutor
-            </Link>
-            
-            <Link 
-              href="/tutors/[id]/request" 
-              className="flex items-center gap-2 py-4 text-sm font-bold text-slate-400 hover:text-white transition-colors border-b-2 border-transparent hover:border-slate-700 whitespace-nowrap"
-            >
-              <Briefcase className="h-4 w-4" />
-              My Hiring Requests
-            </Link>
+            ) : null}
 
             <Link 
               href="/tutors/guide" 
-              className="flex items-center gap-2 py-4 text-sm font-bold text-slate-400 hover:text-white transition-colors border-b-2 border-transparent hover:border-slate-700 whitespace-nowrap"
+              className="flex items-center gap-2 py-2 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm font-bold text-slate-300 hover:text-white transition-colors whitespace-nowrap"
             >
-              <ShieldCheck className="h-4 w-4" />
+              <ShieldCheck className="h-4 w-4 text-emerald-400" />
               How Escrow Works
             </Link>
           </nav>
@@ -96,7 +70,7 @@ export default async function TutorsLayout({
       </header>
 
       {/* ==========================================
-          GLOBAL TRUST BANNER (Optional, dismissible in future)
+          GLOBAL TRUST BANNER 
           ========================================== */}
       <div className="bg-emerald-50 border-b border-emerald-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-2 text-sm text-emerald-800 font-medium text-center">
@@ -107,13 +81,10 @@ export default async function TutorsLayout({
         </div>
       </div>
 
-      {/* ==========================================
-          MAIN CONTENT AREA (Where the grid goes)
-          ========================================== */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {children}
       </main>
-
     </div>
   );
 }

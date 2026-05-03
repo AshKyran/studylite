@@ -1,9 +1,22 @@
+// app/(explore)/projects/[id]/page.tsx
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { initializeProjectCheckout } from "./actions";
+import { 
+  ChevronLeft, 
+  Code2, 
+  CheckCircle2, 
+  ExternalLink, 
+  FileText, 
+  Lock, 
+  Unlock, 
+  ShoppingCart,
+  Database
+} from "lucide-react";
 
+export const dynamic = "force-dynamic";
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-KE", {
@@ -12,20 +25,20 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-export default async function ProjectDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function ProjectDetailPage(props: { params: Promise<{ id: string }> }) {
+  // UPGRADE: Await params for Next.js 15 compatibility
+  const resolvedParams = await props.params;
+  const projectId = resolvedParams.id;
+
   const supabase = await createClient();
   const { data: { user: authUser } } = await supabase.auth.getUser();
 
   // 1. Fetch Project Details
   const project = await prisma.project.findUnique({
-    where: { id: params.id, isPublished: true },
+    where: { id: projectId, isPublished: true },
     include: {
       author: {
-        select: { firstName: true, lastName: true, qualification: true },
+        select: { id: true, firstName: true, lastName: true, qualification: true },
       },
       subject: {
         select: { name: true },
@@ -35,197 +48,155 @@ export default async function ProjectDetailPage({
 
   if (!project) return notFound();
 
+  // UPGRADE: Serialize Prisma Decimal
+  const priceAsNumber = Number(project.price);
+
   // 2. Determine Access Rights (Free vs Paid vs Owned)
   let hasAccess = false;
   
-  if (project.price === 0) {
-    hasAccess = true; // Free projects are accessible to everyone
+  if (priceAsNumber === 0) {
+    hasAccess = true; 
   } else if (authUser) {
     if (project.authorId === authUser.id) {
-      hasAccess = true; // Authors always own their own work
+      hasAccess = true; 
     } else {
       // Check the ledger to see if they bought it
-      const existingPurchase = await prisma.purchase.findFirst({
-        where: { userId: authUser.id, projectId: project.id },
+      const dbUser = await prisma.user.findUnique({
+        where: { id: authUser.id },
+        include: {
+          purchasedProjects: { 
+            where: { id: projectId },
+            select: { id: true }
+          }
+        }
       });
-      if (existingPurchase) hasAccess = true;
-    }
-  }
-
-  // 3. Generate Secure Signed URLs (if they have access)
-  let secureDocumentUrl = null;
-  let secureSourceCodeUrl = null;
-
-  if (hasAccess && authUser) {
-    // Generate 1-hour expiring links from your Supabase storage bucket
-    if (project.documentUrl) {
-      const { data } = await supabase.storage
-        .from("product_files")
-        .createSignedUrl(project.documentUrl, 3600);
-      secureDocumentUrl = data?.signedUrl;
-    }
-    if (project.sourceCodeUrl) {
-      const { data } = await supabase.storage
-        .from("product_files")
-        .createSignedUrl(project.sourceCodeUrl, 3600);
-      secureSourceCodeUrl = data?.signedUrl;
+      if (dbUser && dbUser.purchasedProjects && dbUser.purchasedProjects.length > 0) {
+        hasAccess = true;
+      }
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 md:px-10">
-      <div className="max-w-5xl mx-auto">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 pb-24">
+      
+      {/* Back Button */}
+      <Link href="/explore/projects" className="inline-flex items-center text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors group">
+        <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center mr-3 group-hover:border-blue-200 group-hover:bg-blue-50 transition-all">
+          <ChevronLeft className="w-4 h-4" />
+        </div>
+        Back to Projects Hub
+      </Link>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Back Navigation */}
-        <Link href="/explore/projects" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors mb-8">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          Back to Projects Hub
-        </Link>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        {/* Main Content (Left) */}
+        <div className="lg:col-span-2 space-y-8">
           
-          {/* LEFT COLUMN: Main Content */}
-          <div className="lg:col-span-2 space-y-8">
+          {/* Header Card */}
+          <div className="bg-slate-950 rounded-3xl border border-slate-800 shadow-xl p-8 md:p-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[60px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
             
-            <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-md uppercase tracking-wider">
-                  {project.subject.name}
-                </span>
-                <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-md uppercase tracking-wider">
-                  {project.level.replace("_", " ")}
-                </span>
-              </div>
-
-              <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-6 leading-tight">
-                {project.title}
-              </h1>
-
-              {/* Tech Stack Pills */}
-              {project.techStack.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {project.techStack.map((tech, idx) => (
-                    <span key={idx} className="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm">
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Author Info */}
-              <div className="flex items-center gap-4 py-6 border-t border-slate-100">
-                <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg">
-                  {project.author.firstName[0]}{project.author.lastName[0]}
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500 font-medium mb-0.5">Developed By</p>
-                  <p className="font-bold text-slate-900">
-                    {project.author.firstName} {project.author.lastName}
-                    {project.author.qualification && (
-                      <span className="text-slate-400 font-medium ml-1">
-                        ({project.author.qualification})
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </div>
+            <div className="flex items-center gap-3 mb-6 relative z-10">
+              <span className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider shadow-sm">
+                {project.subject.name}
+              </span>
+              <span className="bg-slate-800 text-slate-300 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider border border-slate-700">
+                {project.level.replace("_", " ")}
+              </span>
             </div>
 
-            <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
-              <h3 className="text-xl font-black text-slate-900 mb-6">Project Overview</h3>
-              <div className="prose prose-slate max-w-none text-slate-600 whitespace-pre-wrap">
-                {project.description}
-              </div>
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight mb-6 relative z-10">
+              {project.title}
+            </h1>
+
+            <div className="flex flex-wrap gap-2 mb-8 relative z-10">
+              {project.techStack.map((tech, index) => (
+                <span key={index} className="px-3 py-1.5 bg-slate-900 border border-slate-700 text-slate-300 text-xs font-bold rounded-lg uppercase tracking-wider">
+                  {tech}
+                </span>
+              ))}
             </div>
+            
+            <p className="text-slate-400 font-medium leading-relaxed relative z-10 text-lg">
+              {project.description}
+            </p>
           </div>
+        </div>
 
-          {/* RIGHT COLUMN: Action Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-slate-900 rounded-3xl p-6 md:p-8 text-white shadow-xl sticky top-8">
-              
-              <div className="mb-8">
-                <p className="text-slate-400 text-sm font-medium mb-2">Total Price</p>
-                <p className="text-4xl font-black text-emerald-400">
-                  {project.price === 0 ? "Free Access" : formatCurrency(project.price)}
-                </p>
-              </div>
+        {/* Purchase Sidebar (Right) */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-24 space-y-6">
+            
+            {/* Payment & Access Card */}
+            <div className="bg-slate-900 rounded-3xl p-8 text-white shadow-xl border border-slate-800 relative overflow-hidden">
+              <p className="text-slate-400 font-bold uppercase tracking-wider text-xs mb-2 relative z-10">Project License</p>
+              <p className="text-4xl font-black mb-8 relative z-10 text-blue-400">
+                {priceAsNumber === 0 ? "FREE" : formatCurrency(priceAsNumber)}
+              </p>
 
-              {/* DYNAMIC ACTION AREA: Download vs Buy */}
               {hasAccess ? (
-                <div className="space-y-4">
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-6 text-center">
-                    <p className="text-emerald-400 font-bold text-sm flex items-center justify-center gap-2">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      Files Unlocked
-                    </p>
-                  </div>
-                  
-                  {/* File Download Buttons */}
-                  {!authUser ? (
-                    <Link href="/login" className="block w-full py-3 bg-white text-slate-900 text-center rounded-xl font-bold transition-colors">
-                      Log in to Download Files
-                    </Link>
-                  ) : (
-                    <>
-                      {secureDocumentUrl && (
-                        <a href={secureDocumentUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                          View Report / Thesis (PDF)
-                        </a>
-                      )}
-                      
-                      {secureSourceCodeUrl && (
-                        <a href={secureSourceCodeUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-colors mt-3">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
-                          Download Source Code (.zip)
-                        </a>
-                      )}
-                    </>
-                  )}
-                </div>
+                <Link href="/dashboard/library" className="w-full flex justify-center items-center gap-2 py-4 px-6 rounded-xl text-base font-black text-slate-900 bg-emerald-400 hover:bg-emerald-300 transition-all active:scale-[0.98] relative z-10 shadow-lg">
+                  <Unlock className="w-5 h-5" /> Access Project Files
+                </Link>
               ) : (
-                <form action={async () => {
-                  "use server";
-                  if (!authUser) redirect("/login");
-                  await initializeProjectCheckout(project.id);
-                }}>
-                  <button type="submit" className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black transition-colors flex items-center justify-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                    Secure Checkout
+                <form action={initializeProjectCheckout} className="relative z-10">
+                  <input type="hidden" name="projectId" value={project.id} />
+                  <button type="submit" className="w-full flex justify-center items-center gap-2 py-4 px-6 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.3)] text-base font-black text-white bg-blue-600 hover:bg-blue-500 transition-all active:scale-[0.98]">
+                    <ShoppingCart className="w-5 h-5" /> Unlock Code & Data
                   </button>
-                  <p className="text-center text-slate-500 text-xs font-medium mt-4">
-                    Secured by Paystack • Instant Delivery
+                  <p className="mt-4 text-center text-xs font-medium text-slate-400 flex items-center justify-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5" /> Secured by Paystack • Instant Delivery
                   </p>
                 </form>
               )}
 
               {/* What's Included */}
-              <div className="mt-8 pt-8 border-t border-slate-800">
+              <div className="mt-8 pt-8 border-t border-slate-800 relative z-10">
                 <p className="text-sm font-bold text-slate-300 mb-4 uppercase tracking-wider">Includes</p>
-                <ul className="space-y-3">
+                <ul className="space-y-4">
                   <li className="flex items-center gap-3 text-slate-400 text-sm font-medium">
-                    <span className={project.documentUrl ? "text-blue-400" : "text-slate-600"}>✓</span>
-                    Full Technical Report
+                    <div className={`p-1.5 rounded-md ${project.documentUrl ? "bg-blue-500/20 text-blue-400" : "bg-slate-800 text-slate-600"}`}>
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    {project.documentUrl ? "Full Technical Report" : <span className="line-through">No Technical Report</span>}
                   </li>
                   <li className="flex items-center gap-3 text-slate-400 text-sm font-medium">
-                    <span className={project.sourceCodeUrl ? "text-emerald-400" : "text-slate-600"}>✓</span>
-                    Complete Source Code
+                    <div className={`p-1.5 rounded-md ${project.sourceCodeUrl ? "bg-emerald-500/20 text-emerald-400" : "bg-slate-800 text-slate-600"}`}>
+                      <Code2 className="w-4 h-4" />
+                    </div>
+                    {project.sourceCodeUrl ? "Complete Source Code" : <span className="line-through">No Source Code</span>}
                   </li>
                   {project.demoUrl && (
                     <li className="flex items-center gap-3 text-slate-400 text-sm font-medium">
-                      <span className="text-purple-400">✓</span>
-                      <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white underline decoration-slate-700 underline-offset-4">
-                        Live Demo Link
+                      <div className="p-1.5 rounded-md bg-purple-500/20 text-purple-400">
+                        <ExternalLink className="w-4 h-4" />
+                      </div>
+                      <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                        Live Demo Link Available
                       </a>
                     </li>
                   )}
                 </ul>
               </div>
-
             </div>
-          </div>
 
+            {/* Developer Card */}
+            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-lg font-black border border-blue-100 shrink-0">
+                {project.author.firstName[0]}{project.author.lastName[0]}
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Developer</p>
+                <p className="font-bold text-slate-900 flex items-center gap-1.5">
+                  {project.author.firstName} {project.author.lastName}
+                  {project.author.qualification && <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />}
+                </p>
+              </div>
+            </div>
+
+          </div>
         </div>
+
       </div>
     </div>
   );

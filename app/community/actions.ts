@@ -1,10 +1,10 @@
+// app/community/actions.ts
 "use server";
 
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
-// --- STRICT TYPES ---
 export interface CreateQuestionPayload {
   title: string;
   body: string;
@@ -24,11 +24,11 @@ export async function createQuestion(payload: CreateQuestionPayload) {
   const { data: { user: authUser }, error } = await supabase.auth.getUser();
 
   if (error || !authUser) {
-    throw new Error("You must be logged in to ask a question.");
+    return { error: "You must be logged in to ask a question." };
   }
 
   if (!payload.title.trim() || !payload.body.trim()) {
-    throw new Error("Title and body are required.");
+    return { error: "Title and body are required." };
   }
 
   try {
@@ -44,9 +44,8 @@ export async function createQuestion(payload: CreateQuestionPayload) {
     revalidatePath("/community");
     return { success: true, questionId: newQuestion.id };
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "Failed to create question.";
     console.error("Create Question Error:", err);
-    throw new Error(errorMessage);
+    return { error: "Failed to post your question. Please try again." };
   }
 }
 
@@ -58,29 +57,27 @@ export async function createAnswer(payload: CreateAnswerPayload) {
   const { data: { user: authUser }, error } = await supabase.auth.getUser();
 
   if (error || !authUser) {
-    throw new Error("You must be logged in to answer a question.");
+    return { error: "You must be logged in to post an answer." };
   }
 
   if (!payload.body.trim()) {
-    throw new Error("Answer body cannot be empty.");
+    return { error: "Answer body cannot be empty." };
   }
 
   try {
     await prisma.communityAnswer.create({
       data: {
         body: payload.body,
-        questionId: payload.questionId,
         authorId: authUser.id,
+        questionId: payload.questionId,
       },
     });
 
     revalidatePath(`/community/${payload.questionId}`);
-    revalidatePath("/community");
     return { success: true };
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "Failed to post answer.";
     console.error("Create Answer Error:", err);
-    throw new Error(errorMessage);
+    return { error: "Failed to post your answer. Please try again." };
   }
 }
 
@@ -93,7 +90,7 @@ export async function acceptAnswer(questionId: string, answerId: string) {
   const { data: { user: authUser }, error } = await supabase.auth.getUser();
 
   if (error || !authUser) {
-    throw new Error("Unauthorized");
+    return { error: "Unauthorized access." };
   }
 
   // Verify the user owns the question
@@ -102,19 +99,17 @@ export async function acceptAnswer(questionId: string, answerId: string) {
     select: { authorId: true, isResolved: true },
   });
 
-  if (!question) throw new Error("Question not found.");
-  if (question.authorId !== authUser.id) throw new Error("Only the author can accept an answer.");
-  if (question.isResolved) throw new Error("This question is already resolved.");
+  if (!question) return { error: "Question not found." };
+  if (question.authorId !== authUser.id) return { error: "Only the author can accept an answer." };
+  if (question.isResolved) return { error: "This question is already resolved." };
 
   try {
     await prisma.$transaction(async (tx) => {
-      // Mark answer as accepted
       await tx.communityAnswer.update({
         where: { id: answerId },
         data: { isAccepted: true },
       });
 
-      // Mark question as resolved
       await tx.communityQuestion.update({
         where: { id: questionId },
         data: { isResolved: true },
@@ -124,8 +119,7 @@ export async function acceptAnswer(questionId: string, answerId: string) {
     revalidatePath(`/community/${questionId}`);
     return { success: true };
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "Failed to accept answer.";
     console.error("Accept Answer Error:", err);
-    throw new Error(errorMessage);
+    return { error: "Failed to accept the answer. Please try again." };
   }
 }

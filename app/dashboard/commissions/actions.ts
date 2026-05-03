@@ -1,10 +1,11 @@
+// app/dashboard/commissions/actions.ts
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 
-export async function updateCommissionStatus(requestId: string, newStatus: string) {
+export async function updateCommissionStatus(requestId: string, newStatus: string, fileUrl?: string) {
   const supabase = await createClient();
   const { data: { user: authUser } } = await supabase.auth.getUser();
 
@@ -19,57 +20,68 @@ export async function updateCommissionStatus(requestId: string, newStatus: strin
     throw new Error("Request not found or unauthorized access.");
   }
 
-  if (request.status === "DELIVERED" || request.status === "REJECTED") {
+  if (request.status === "DELIVERED" || request.status === "REJECTED" || request.status === "CANCELLED") {
     throw new Error("This commission is already closed.");
   }
 
   try {
     return await prisma.$transaction(async (tx) => {
       
+      // 1. Update the Request Status (and attach the delivered file URL if present)
       const updatedRequest = await tx.materialRequest.update({
         where: { id: requestId },
-        data: { status: newStatus }
+        data: { 
+          status: newStatus,
+          ...(fileUrl && { fileUrl }) // Only update fileUrl if it was passed
+        }
       });
 
+      // UPGRADE: Safely convert Decimal to Number for accurate math
+      const offerAmountKES = Number(request.offerAmount);
+
+      // 2. ESCROW PAYOUT LOGIC (Delivered)
       if (newStatus === "DELIVERED") {
         await tx.wallet.upsert({
           where: { userId: authUser.id },
-          update: { balance: { increment: request.offerAmount } },
-          create: { userId: authUser.id, balance: request.offerAmount }
-        });
-      }
-
-      // B. ESCROW PAYOUT LOGIC: Only if status is DELIVERED
-      if (newStatus === "DELIVERED") {
-        await tx.wallet.update({
-          where: { userId: authUser.id }, 
-          data: { balance: { increment: request.offerAmount } }
+          update: { balance: { increment: offerAmountKES } },
+          create: { userId: authUser.id, balance: offerAmountKES }
         });
         
-        // UNCOMMENTED AND READY:
         await tx.transaction.create({
           data: {
             userId: authUser.id,
-            amount: request.offerAmount,
+            amount: offerAmountKES,
             type: "COMMISSION_PAYOUT",
-            reference: `ESCROW_PAYOUT_${requestId}`, // <--- Generated unique reference
+            reference: `ESCROW_PAYOUT_${requestId}_${Date.now()}`, 
             description: `Payment for commission: ${requestId}`
           }
         });
       }
 
+      // 3. ESCROW REFUND LOGIC (Rejected)
       if (newStatus === "REJECTED") {
-        const platformFee = Math.round(request.offerAmount * 0.05);
-        const totalRefund = request.offerAmount + platformFee;
+        const platformFee = offerAmountKES * 0.05;
+        const totalRefund = offerAmountKES + platformFee;
 
         await tx.wallet.upsert({
           where: { userId: request.studentId },
           update: { balance: { increment: totalRefund } },
           create: { userId: request.studentId, balance: totalRefund }
         });
+
+        await tx.transaction.create({
+          data: {
+            userId: request.studentId,
+            amount: totalRefund,
+            type: "REFUND",
+            reference: `REFUND_${requestId}_${Date.now()}`,
+            description: `Refund for declined commission: ${requestId}`
+          }
+        });
       }
 
       revalidatePath("/dashboard/commissions");
+      revalidatePath("/dashboard/requests"); // Refresh the student's view too
       return { success: true, status: newStatus };
     });
   } catch (error) {

@@ -1,19 +1,22 @@
+// app/(explore)/tests/take/[id]/page.tsx
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
 import TestArena from "./TestArena"; 
 
-export default async function TakeTestPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export const dynamic = "force-dynamic";
+
+export default async function TakeTestPage(props: { params: Promise<{ id: string }> }) {
+  // UPGRADE: Await params for Next.js 15
+  const resolvedParams = await props.params;
+  const examId = resolvedParams.id;
+
   // 1. Strict Authentication & Premium Gatekeeper
   const supabase = await createClient();
-  const { data: { user: authUser } } = await supabase.auth.getUser();
+  const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
 
-  if (!authUser) {
-    redirect(`/login?redirect=/explore/tests/take/${params.id}`);
+  if (authError || !authUser) {
+    redirect(`/login?redirect=/explore/tests/take/${examId}`);
   }
 
   const dbUser = await prisma.user.findUnique({
@@ -27,7 +30,7 @@ export default async function TakeTestPage({
 
   // 2. Fetch the Exam & Questions
   const rawExam = await prisma.exam.findUnique({
-    where: { id: params.id, isPublished: true },
+    where: { id: examId, isPublished: true },
     include: {
       subject: {
         select: { name: true },
@@ -46,23 +49,14 @@ export default async function TakeTestPage({
 
   if (!rawExam) notFound();
 
-  // 3. Optional: Check if the user has already taken this test
-  // If this is a strict 1-time exam, we could redirect them away here.
-  // For practice quizzes, we let them retake it.
   const previousAttempts = await prisma.examAttempt.count({
-    where: { userId: dbUser.id, examId: params.id }
+    where: { userId: dbUser.id, examId: examId }
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 font-sans selection:bg-rose-500 selection:text-white">
-      {/* Pass the sanitized exam data to the Client Component.
-        The client handles the timer, UI, and user selections.
-      */}
-      <TestArena 
-        exam={rawExam} 
-        userId={dbUser.id} 
-        previousAttempts={previousAttempts} 
-      />
+    <div className="min-h-screen bg-slate-950 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+      {/* Pass the sanitized exam data to the Client Component */}
+      <TestArena exam={rawExam} userId={dbUser.id} previousAttempts={previousAttempts} />
     </div>
   );
 }

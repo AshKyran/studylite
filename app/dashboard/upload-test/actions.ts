@@ -1,3 +1,4 @@
+// app/dashboard/upload-test/actions.ts
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
@@ -5,8 +6,6 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { EducationLevel } from "@prisma/client";
 
-
-// Types mirroring our form state
 export interface CreateExamPayload {
   title: string;
   description: string;
@@ -26,19 +25,25 @@ export async function createExamAction(data: CreateExamPayload) {
   const supabase = await createClient();
   const { data: { user: authUser }, error } = await supabase.auth.getUser();
 
-  if (error || !authUser) throw new Error("Unauthorized");
+  if (error || !authUser) {
+    return { error: "Unauthorized. Please log in." };
+  }
 
   const dbUser = await prisma.user.findUnique({
     where: { id: authUser.id },
-    select: { role: true }
+    select: { role: true, isProfileComplete: true }
   });
 
   if (dbUser?.role !== "TUTOR" && dbUser?.role !== "RESEARCHER") {
-    throw new Error("Only verified creators can publish assessments.");
+    return { error: "Forbidden. Only verified creators can publish assessments." };
+  }
+
+  if (!dbUser.isProfileComplete) {
+    return { error: "Please complete your profile onboarding before publishing." };
   }
 
   try {
-    // Prisma Nested Create Transaction
+    // 🔐 Prisma Nested Create Transaction
     const exam = await prisma.exam.create({
       data: {
         title: data.title,
@@ -68,14 +73,16 @@ export async function createExamAction(data: CreateExamPayload) {
       }
     });
 
-    // Refresh the Test Hub pages so the new exam shows up instantly
-    revalidatePath("/explore/tests");
-    revalidatePath("/explore/tests/generator");
+    revalidatePath("/tests");
+    revalidatePath("/dashboard");
 
     return { success: true, examId: exam.id };
 
-  } catch (dbError) {
+  } catch (dbError: unknown) {
     console.error("Database Error creating exam:", dbError);
-    throw new Error("Failed to save the assessment to the database.");
+    if (dbError instanceof Error) {
+      return { error: `Database error: ${dbError.message}` };
+    }
+    return { error: "An unexpected database error occurred." };
   }
 }

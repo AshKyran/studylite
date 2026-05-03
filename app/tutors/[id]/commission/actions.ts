@@ -1,16 +1,16 @@
+// app/tutors/[id]/commission/actions.ts
 "use server";
 
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
-// Define the expected form data shape
-type CommissionFormData = {
+export type CommissionFormData = {
   tutorId: string;
   title: string;
   description: string;
   format: string;
-  deadline: string; // ISO Date string
+  deadline: string; 
   offerAmount: number;
 };
 
@@ -20,43 +20,40 @@ type CommissionFormData = {
  */
 export async function processCommissionInitiation(formData: CommissionFormData) {
   const supabase = await createClient();
-  const { data: { user: authUser } } = await supabase.auth.getUser();
-  if (!authUser) throw new Error("Unauthorized");
+  const { data: { user: authUser }, error } = await supabase.auth.getUser();
+  if (error || !authUser) return { error: "Unauthorized. Please log in." };
 
-  // Calculate the total cost including the 5% platform Escrow fee
   const platformFee = Math.round(formData.offerAmount * 0.05);
   const totalCost = formData.offerAmount + platformFee;
 
-  // Fetch the user's current wallet balance
-  const dbUser = await prisma.user.findUnique({
-    where: { id: authUser.id },
-    include: { wallet: true }
-  });
-
-  if (!dbUser) throw new Error("User not found");
-
-  const currentBalance = dbUser.wallet?.balance || 0;
-
-  // SCENARIO A: Student needs to top up
-  if (currentBalance < totalCost) {
-    const amountNeeded = totalCost - currentBalance;
-    return { 
-      requiresPayment: true, 
-      amountNeeded: amountNeeded,
-      totalCost: totalCost
-    };
-  }
-
-  // SCENARIO B: Student has enough funds. Process immediately.
   try {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: authUser.id },
+      include: { wallet: true }
+    });
+
+    if (!dbUser) return { error: "User not found" };
+
+    // UPGRADE: Safe Prisma Decimal to Number conversion
+    const currentBalance = dbUser.wallet?.balance ? Number(dbUser.wallet.balance) : 0;
+
+    // SCENARIO A: Student needs to top up
+    if (currentBalance < totalCost) {
+      const amountNeeded = totalCost - currentBalance;
+      return { 
+        requiresPayment: true, 
+        amountNeeded: amountNeeded,
+        totalCost: totalCost
+      };
+    }
+
+    // SCENARIO B: Student already has enough funds. Process immediately!
     await prisma.$transaction(async (tx) => {
-      // 1. Lock the funds (Deduct from wallet)
       await tx.wallet.update({
         where: { userId: authUser.id },
         data: { balance: { decrement: totalCost } }
       });
 
-      // 2. Create the Commission Request
       await tx.materialRequest.create({
         data: {
           title: formData.title,
@@ -69,43 +66,54 @@ export async function processCommissionInitiation(formData: CommissionFormData) 
           status: "PENDING"
         }
       });
+
+      await tx.transaction.create({
+        data: {
+          userId: authUser.id,
+          amount: totalCost,
+          type: "ESCROW_DEPOSIT",
+          reference: `ESCROW_REQ_${Date.now()}_${authUser.id.substring(0,5)}`,
+          description: `Escrow deposit for custom material: ${formData.title}`
+        }
+      });
     });
 
     revalidatePath("/dashboard/requests");
     return { success: true };
+
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    throw new Error("Failed to process commission: " + message);
+    return { error: error instanceof Error ? error.message : "Failed to initiate commission" };
   }
 }
 
 /**
- * STEP 2: If Paystack was triggered, this runs AFTER successful payment.
- * It verifies the payment, tops up the wallet, and creates the commission.
+ * STEP 2: Verify the Paystack Top-Up and finalize the commission.
  */
-export async function finalizeFundedCommission(formData: CommissionFormData, paystackReference: string) {
+export async function verifyAndFundCommission(reference: string, formData: CommissionFormData) {
   const supabase = await createClient();
-  const { data: { user: authUser } } = await supabase.auth.getUser();
-  if (!authUser) throw new Error("Unauthorized");
+  const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+  if (authError || !authUser) return { error: "Unauthorized" };
 
   const platformFee = Math.round(formData.offerAmount * 0.05);
   const totalCost = formData.offerAmount + platformFee;
 
-  // 1. Securely verify the transaction with Paystack's API
   try {
-    const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${paystackReference}`, {
+    // 1. Verify Paystack Payment
+    const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+      method: "GET",
       headers: {
         Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        "Content-Type": "application/json",
       },
+      cache: "no-store"
     });
-    
+
     const paystackData = await verifyRes.json();
-    
+
     if (!paystackData.status || paystackData.data.status !== "success") {
-      throw new Error("Payment verification failed. The transaction was not successful.");
+      return { error: "Payment verification failed." };
     }
 
-    // Paystack amounts are in cents (kobo), so we divide by 100
     const topUpAmount = paystackData.data.amount / 100;
 
     // 2. Execute the Atomic Transaction
@@ -117,8 +125,7 @@ export async function finalizeFundedCommission(formData: CommissionFormData, pay
         create: { userId: authUser.id, balance: 0 }
       });
 
-      // B. Add the newly deposited funds, then immediately subtract the commission cost
-      // (This perfectly balances out if they only paid the exact difference)
+      // B. Add deposited funds, subtract total cost simultaneously
       await tx.wallet.update({
         where: { id: wallet.id },
         data: { 
@@ -142,14 +149,33 @@ export async function finalizeFundedCommission(formData: CommissionFormData, pay
           status: "PENDING"
         }
       });
+
+      // D. UPGRADE: Create Audit Trails for both the Top-up and the Escrow hold
+      await tx.transaction.create({
+        data: {
+          userId: authUser.id,
+          amount: topUpAmount,
+          type: "TOP_UP",
+          reference: reference,
+          description: "Wallet Top-up via Paystack for Escrow"
+        }
+      });
+
+      await tx.transaction.create({
+        data: {
+          userId: authUser.id,
+          amount: totalCost,
+          type: "ESCROW_DEPOSIT",
+          reference: `ESCROW_REQ_${Date.now()}_${authUser.id.substring(0,5)}`,
+          description: `Escrow deposit for custom material: ${formData.title}`
+        }
+      });
     });
 
     revalidatePath("/dashboard/requests");
     return { success: true };
     
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("Funding Error:", error);
-    throw new Error(message || "Failed to finalize funded commission.");
+    return { error: error instanceof Error ? error.message : "Unknown error during payment verification" };
   }
 }

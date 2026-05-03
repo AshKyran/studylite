@@ -1,21 +1,28 @@
+// app/tutors/[id]/request/page.tsx
 import { createClient } from "@/utils/supabase/server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import RequestForm from "./RequestForm";
 import prisma from "@/lib/prisma";
+import { ChevronLeft } from "lucide-react";
 
-export default async function RequestMaterialPage({ params }: { params: { id: string } }) {
+export const dynamic = "force-dynamic";
+
+export default async function RequestMaterialPage({ params }: { params: Promise<{ id: string }> }) {
+  // UPGRADE: Next.js 15 strictly requires params to be awaited
+  const resolvedParams = await params;
+  
   // 1. Strict Authentication
   const supabase = await createClient();
   const { data: { user: authUser } } = await supabase.auth.getUser();
 
   if (!authUser) {
-    redirect(`/login?redirect=/tutors/${params.id}/request`);
+    redirect(`/login?redirect=/tutors/${resolvedParams.id}/request`);
   }
 
   // 2. Fetch the Tutor
   const tutor = await prisma.user.findUnique({
-    where: { id: params.id },
+    where: { id: resolvedParams.id },
     select: { id: true, firstName: true, lastName: true, role: true }
   });
 
@@ -23,11 +30,11 @@ export default async function RequestMaterialPage({ params }: { params: { id: st
     notFound();
   }
 
-  // Fallback base rate (In production, pull this from tutor.baseRate)
+  // Fallback base rate (In production, pull this from tutor.baseRate if it exists in schema)
   const baseRate = 1500;
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 pb-24 font-sans selection:bg-emerald-200 selection:text-emerald-900">
+    <div className="min-h-[calc(100vh-5rem)] bg-slate-50 pt-12 pb-24 font-sans selection:bg-emerald-200 selection:text-emerald-900">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header Navigation */}
@@ -36,10 +43,8 @@ export default async function RequestMaterialPage({ params }: { params: { id: st
             href={`/tutors/${tutor.id}`} 
             className="inline-flex items-center text-sm font-bold text-slate-500 hover:text-emerald-600 transition-colors group"
           >
-            <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center mr-3 group-hover:border-emerald-200 group-hover:bg-emerald-50 transition-all">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
+            <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center mr-3 group-hover:border-emerald-200 group-hover:bg-emerald-50 transition-all">
+              <ChevronLeft className="w-4 h-4" />
             </div>
             Back to {tutor.firstName}&apos;s Profile
           </Link>
@@ -54,16 +59,14 @@ export default async function RequestMaterialPage({ params }: { params: { id: st
               Commission Material
             </h1>
             <p className="text-slate-400 font-medium relative z-10 text-sm md:text-base">
-              Request a custom PDF or ZIP bundle from <span className="text-emerald-400 font-bold">{tutor.firstName} {tutor.lastName}</span>
+              Request a custom PDF or ZIP bundle from <span className="text-emerald-400 font-bold">{tutor.firstName}</span>. Funds are securely held in Escrow.
             </p>
           </div>
 
-          <div className="p-8 md:p-10">
-            {/* The Interactive Form */}
+          <div className="p-8">
             <RequestForm tutorId={tutor.id} tutorName={tutor.firstName} baseRate={baseRate} />
           </div>
         </div>
-
       </div>
     </div>
   );

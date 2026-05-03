@@ -1,12 +1,24 @@
+// app/(explore)/[id]/page.tsx
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { initializeCheckout } from "./actions";
+import { 
+  ChevronLeft, 
+  CheckCircle2, 
+  GraduationCap, 
+  Building2, 
+  Lock, 
+  Unlock, 
+  ShoppingCart,
+  FileText
+} from "lucide-react";
 
+export const dynamic = "force-dynamic";
 
-// In Next.js 16, params are asynchronous
 export default async function ProductDetailPage(props: { params: Promise<{ id: string }> }) {
+  // UPGRADE: Await params for Next.js 15
   const params = await props.params;
   const productId = params.id;
 
@@ -27,8 +39,11 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
   });
 
   if (!product || !product.isPublished) {
-    notFound(); // Triggers Next.js 404 page
+    notFound(); 
   }
+
+  // UPGRADE: Safe Decimal Conversion
+  const productPrice = Number(product.price);
 
   // 2. Check if the logged-in user already owns this product
   let hasPurchased = false;
@@ -45,137 +60,134 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
     if (dbUser && dbUser.purchasedNotes.length > 0) {
       hasPurchased = true;
     }
-    // Also prevent the author from buying their own product
     if (product.authorId === authUser.id) {
-      hasPurchased = true; 
+      hasPurchased = true; // Authors own their own work
     }
   }
 
-  // 3. Format Currency & Images
-  const formatCurrency = (amount: number) => {
-    return amount === 0 ? "FREE" : new Intl.NumberFormat("en-KE", {
-      style: "currency",
-      currency: "KES",
-    }).format(amount);
-  };
-
-  const getImageUrl = (path: string | null) => {
-    if (!path) return "https://placehold.co/800x500/e2e8f0/475569?text=No+Cover+Image";
-    const { data } = supabase.storage.from("product_thumbnails").getPublicUrl(path);
-    return data.publicUrl;
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        
-        {/* Back Navigation */}
-        <Link href="/explore" className="inline-flex items-center text-sm font-bold text-slate-500 hover:text-blue-600 mb-8 transition-colors">
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          Back to Marketplace
-        </Link>
+    <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 pb-24">
+      
+      {/* Back Button */}
+      <Link href="/explore" className="inline-flex items-center text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors group">
+        <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center mr-3 group-hover:border-indigo-200 group-hover:bg-indigo-50 transition-all">
+          <ChevronLeft className="w-4 h-4" />
+        </div>
+        Back to Marketplace
+      </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Main Content (Left) */}
+        <div className="lg:col-span-2 space-y-8">
           
-          {/* LEFT COLUMN: Image & Description */}
-          <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm">
-              <div className="aspect-video w-full bg-slate-100 relative">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  src={getImageUrl(product.thumbnailUrl)} 
-                  alt={product.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-4 left-4 flex gap-2">
-                  <span className="bg-slate-900/90 backdrop-blur-sm text-white text-xs font-black px-3 py-1.5 rounded-lg uppercase tracking-wider shadow-sm">
-                    {product.subject.name}
-                  </span>
-                  <span className="bg-blue-600/90 backdrop-blur-sm text-white text-xs font-black px-3 py-1.5 rounded-lg uppercase tracking-wider shadow-sm">
-                    {product.level.replace("_", " ")}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="p-8 sm:p-10">
-                <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-6">
-                  {product.title}
-                </h1>
-                
-                <div className="prose prose-slate max-w-none">
-                  <h3 className="text-lg font-bold text-slate-900 mb-3">About this material</h3>
-                  <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
-                    {product.description}
-                  </p>
-                </div>
-              </div>
+          {/* Header Card */}
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 md:p-10">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider border border-indigo-100">
+                {product.subject.name}
+              </span>
+              <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider border border-slate-200">
+                {product.level.replace("_", " ")}
+              </span>
+            </div>
+
+            <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight mb-6">
+              {product.title}
+            </h1>
+
+            <div className="prose prose-slate max-w-none text-slate-600 font-medium leading-relaxed">
+              <p>{product.description}</p>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Checkout & Author Card */}
-          <div className="lg:col-span-1 space-y-6">
-            
-            {/* Checkout Card */}
-            <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl sticky top-8">
-              <div className="mb-6">
-                <p className="text-slate-500 font-bold uppercase tracking-wider text-sm mb-2">Price</p>
-                <p className={`text-4xl font-black ${product.price === 0 ? "text-emerald-600" : "text-slate-900"}`}>
-                  {formatCurrency(product.price)}
-                </p>
+          {/* Secure File Preview Mock */}
+          <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 flex flex-col items-center justify-center text-center">
+            <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-100 mb-6 relative">
+              <FileText className="w-10 h-10 text-slate-300" />
+              <div className="absolute -bottom-2 -right-2 bg-slate-800 text-white p-1.5 rounded-lg shadow-sm">
+                {hasPurchased ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
               </div>
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">
+              {hasPurchased ? "Digital File Unlocked" : "Secure Digital Download"}
+            </h3>
+            <p className="text-slate-500 font-medium max-w-sm">
+              {hasPurchased 
+                ? "You own this material. You can access the full secure document in your library."
+                : "The full document is encrypted and will be instantly delivered to your library upon purchase."}
+            </p>
+          </div>
+        </div>
+
+        {/* Purchase Sidebar (Right) */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-24 space-y-6">
+            
+            {/* Payment Card */}
+            <div className="bg-slate-900 rounded-3xl p-8 text-white shadow-xl border border-slate-800 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 blur-2xl rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
+              
+              <p className="text-slate-400 font-bold uppercase tracking-wider text-xs mb-2 relative z-10">Total Price</p>
+              <p className="text-4xl font-black mb-8 relative z-10">
+                {productPrice === 0 ? "FREE" : `KES ${productPrice.toLocaleString()}`}
+              </p>
 
               {hasPurchased ? (
-                <div className="space-y-4">
-                  <div className="bg-emerald-50 text-emerald-700 p-4 rounded-xl border border-emerald-200 text-sm font-bold flex items-center gap-3">
-                    <span className="text-xl">✅</span> You already own this material.
-                  </div>
-                  <Link href="/dashboard/library" className="w-full flex justify-center py-4 px-4 rounded-xl shadow-md text-base font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all">
-                    Go to My Library
-                  </Link>
-                </div>
-              ) : !authUser ? (
-                <Link href={`/login?next=/explore/${product.id}`} className="w-full flex justify-center py-4 px-4 rounded-xl shadow-md text-base font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all">
-                  Log in to Purchase
+                <Link href="/dashboard/library" className="w-full flex justify-center items-center gap-2 py-4 px-6 rounded-xl text-base font-black text-slate-900 bg-emerald-400 hover:bg-emerald-300 transition-all active:scale-[0.98] relative z-10">
+                  <Unlock className="w-5 h-5" /> Access in Library
                 </Link>
               ) : (
-                <form action={initializeCheckout}>
+                <form action={initializeCheckout} className="relative z-10">
                   <input type="hidden" name="productId" value={product.id} />
-                  <button type="submit" className="w-full flex justify-center py-4 px-4 rounded-xl shadow-md text-base font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all transform hover:-translate-y-0.5">
-                    {product.price === 0 ? "Add to Library (Free)" : "Proceed to Payment"}
+                  <button type="submit" className="w-full flex justify-center items-center gap-2 py-4 px-6 rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.3)] text-base font-black text-white bg-indigo-600 hover:bg-indigo-500 transition-all active:scale-[0.98]">
+                    <ShoppingCart className="w-5 h-5" /> Buy Now
                   </button>
-                  <p className="text-center text-xs text-slate-400 font-medium mt-4 flex justify-center items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                    Secured by Paystack
-                  </p>
                 </form>
+              )}
+              
+              {!hasPurchased && (
+                <div className="mt-6 flex items-center justify-center gap-2 text-xs font-medium text-slate-400 relative z-10">
+                  <Lock className="w-3.5 h-3.5" /> Secured by Paystack
+                </div>
               )}
             </div>
 
-            {/* Author Credibility Card */}
-            <div className="bg-slate-900 rounded-3xl p-8 border border-slate-800 shadow-md text-white">
-              <p className="text-slate-400 font-bold uppercase tracking-wider text-xs mb-4">Author Credentials</p>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xl font-black border border-blue-500/30">
+            {/* Author Card */}
+            <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6">About the Author</p>
+              
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 text-xl font-black border border-indigo-100">
                   {product.author.firstName[0]}{product.author.lastName[0]}
                 </div>
                 <div>
-                  <p className="font-bold text-lg">{product.author.firstName} {product.author.lastName}</p>
-                  <p className="text-blue-400 text-sm font-medium">{product.author.role}</p>
+                  <p className="font-black text-lg text-slate-900 flex items-center gap-1.5">
+                    {product.author.firstName} {product.author.lastName}
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  </p>
+                  <p className="text-indigo-600 text-sm font-bold">{product.author.role}</p>
                 </div>
               </div>
               
               {(product.author.qualification || product.author.institution) && (
-                <div className="space-y-3 pt-4 border-t border-slate-800">
+                <div className="space-y-4 pt-6 border-t border-slate-100">
                   {product.author.qualification && (
                     <div className="flex items-start gap-3">
-                      <span className="text-slate-500">🎓</span>
-                      <p className="text-sm text-slate-300"><span className="font-bold text-white">Highest Qualification:</span><br/>{product.author.qualification}</p>
+                      <GraduationCap className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
+                      <p className="text-sm text-slate-600 font-medium">
+                        <span className="font-bold text-slate-900 block mb-0.5">Highest Qualification</span>
+                        {product.author.qualification}
+                      </p>
                     </div>
                   )}
                   {product.author.institution && (
                     <div className="flex items-start gap-3">
-                      <span className="text-slate-500">🏛️</span>
-                      <p className="text-sm text-slate-300"><span className="font-bold text-white">Institution:</span><br/>{product.author.institution}</p>
+                      <Building2 className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
+                      <p className="text-sm text-slate-600 font-medium">
+                        <span className="font-bold text-slate-900 block mb-0.5">Institution</span>
+                        {product.author.institution}
+                      </p>
                     </div>
                   )}
                 </div>
