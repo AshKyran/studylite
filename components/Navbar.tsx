@@ -51,7 +51,28 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
     pathname?.startsWith("/tests") ||
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/register") ||
-    pathname?.startsWith("/forgot-password")
+    pathname?.startsWith("/forgot-password") ||
+    pathname?.startsWith("/projects") ||
+    pathname?.startsWith("/settings") ||
+    pathname?.startsWith("/profile") ||
+    pathname?.startsWith("/messages") ||
+    pathname?.startsWith("/notifications") ||
+    pathname?.startsWith("/billing") ||
+    pathname?.startsWith("/subscriptions") ||
+    pathname?.startsWith("/support") ||
+    pathname?.startsWith("/feedback") ||
+    pathname?.startsWith("/terms") ||
+    pathname?.startsWith("/privacy") ||
+    pathname?.startsWith("/cookies") ||
+    pathname?.startsWith("/about") ||
+    pathname?.startsWith("/contact") ||
+    pathname?.startsWith("/careers") ||
+    pathname?.startsWith("/blog") ||
+    pathname?.startsWith("/forgot-password") ||
+    pathname?.startsWith("/reset-password") ||
+    pathname?.startsWith("/verify-email") ||
+    pathname?.startsWith("/404") ||
+    pathname?.startsWith("/500")
     
   ) {
     return null;

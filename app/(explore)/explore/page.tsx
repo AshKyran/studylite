@@ -75,7 +75,7 @@ export default async function ExplorePage(
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map((product) => (
             <Link 
-              href={`/${product.id}`} // Routes to your (explore)/[id]/page.tsx
+              href={`/explore/${product.id}`} // Routes to your (explore)/[id]/page.tsx
               key={product.id} 
               className="bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all flex flex-col group overflow-hidden"
             >
