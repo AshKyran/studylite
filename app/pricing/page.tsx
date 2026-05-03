@@ -1,14 +1,24 @@
+// app/pricing/page.tsx
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
 import { processSubscription, PlanType, getSubscriptionStatus } from "../actions/subscription";
-import { CheckCircle2, ShieldCheck, Crown, Loader2, Star, Zap } from "lucide-react";
+import { toast } from "sonner";
+import { 
+  CheckCircle2, 
+  ShieldCheck, 
+  Crown, 
+  Loader2, 
+  Star, 
+  Zap,
+  Rocket
+} from "lucide-react";
 
 export default function PricingPage() {
   const [isPending, startTransition] = useTransition();
   const [loadingPlan, setLoadingPlan] = useState<PlanType | null>(null);
   
-  // New state to hold the user's DB status
+  // Subscription State
   const [status, setStatus] = useState<{
     isSubscribed: boolean;
     subscriptionPlan: string | null;
@@ -20,17 +30,28 @@ export default function PricingPage() {
     getSubscriptionStatus().then((data) => {
       setStatus(data);
       setIsPageLoading(false);
+    }).catch(() => {
+      toast.error("Failed to load subscription status.");
+      setIsPageLoading(false);
     });
   }, []);
 
   const handleSubscribe = (plan: PlanType) => {
+    if (status?.isSubscribed && status.subscriptionPlan === plan) {
+      toast.info("You are already subscribed to this plan.");
+      return;
+    }
+
     setLoadingPlan(plan);
+    const toastId = toast.loading("Redirecting to secure checkout...");
+
     startTransition(async () => {
       try {
         await processSubscription(plan);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "An error occurred";
-        alert(message);
+        toast.success("Checkout initialized successfully!", { id: toastId });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "An unexpected error occurred.";
+        toast.error(message, { id: toastId });
         setLoadingPlan(null);
       }
     });
@@ -38,218 +59,144 @@ export default function PricingPage() {
 
   if (isPageLoading) {
     return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-slate-50">
+        <Loader2 className="h-10 w-10 animate-spin text-indigo-600 mb-4" />
+        <p className="text-slate-500 font-bold uppercase tracking-widest text-sm animate-pulse">
+          Loading Secure Checkout...
+        </p>
       </div>
     );
   }
 
-  // Check if they have an active plan (and aren't just on the restricted 7-day trial)
-  const hasActivePremium = status?.isSubscribed && status.subscriptionPlan !== "TRIAL_7_DAY";
-
-  // ==========================================
-  // VIEW 1: PREMIUM DASHBOARD (Already Subscribed)
-  // ==========================================
-  if (hasActivePremium) {
-    return (
-      <div className="min-h-[80vh] bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Your Subscription</h1>
-            <p className="mt-2 text-sm text-slate-500">
-              Manage your premium StudyLite access.
-            </p>
-          </div>
-
-          <div className="bg-slate-900 rounded-[2rem] p-8 sm:p-10 shadow-2xl relative overflow-hidden">
-            {/* Decorative background glow */}
-            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-blue-500/20 blur-3xl rounded-full pointer-events-none"></div>
-            
-            <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-xs font-black uppercase tracking-wider border border-emerald-500/20">
-                  <Star className="h-3.5 w-3.5 fill-emerald-400" />
-                  Active Subscription
-                </div>
-                
-                <h2 className="text-3xl sm:text-4xl font-black text-white">
-                  {status.subscriptionPlan?.replace(/_/g, ' ')}
-                </h2>
-                
-                <p className="text-slate-400 max-w-md text-sm">
-                  Your account is fully upgraded. You have unrestricted access to premium notes, online tests, and advanced research materials.
-                </p>
-              </div>
-
-              {/* Status Badge */}
-              <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 min-w-[200px] shadow-inner text-center">
-                <ShieldCheck className="h-8 w-8 text-emerald-400 mx-auto mb-3" />
-                <p className="text-xl font-black text-white">Verified</p>
-                <p className="text-xs text-slate-400 mt-1">Full Access Unlocked</p>
-              </div>
-            </div>
-
-            <div className="relative z-10 mt-10 pt-8 border-t border-slate-800 flex flex-col sm:flex-row gap-4">
-              <button disabled className="bg-slate-800 text-slate-400 px-6 py-3 rounded-xl font-bold text-sm cursor-not-allowed flex items-center justify-center gap-2">
-                <ShieldCheck className="h-4 w-4" />
-                Plan is fully active
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ==========================================
-  // VIEW 2: PRICING GRID (Not Subscribed)
-  // ==========================================
   return (
-    <div className="min-h-screen bg-slate-50 py-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-[calc(100vh-5rem)] bg-slate-50 py-16 sm:py-24 font-sans selection:bg-indigo-200 selection:text-indigo-900 pb-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-6">
-            Unlock Unlimited Academic Excellence
+        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-black uppercase tracking-wider mb-2">
+            <ShieldCheck className="w-4 h-4" /> Secure Payment
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight">
+            Unlock your full <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-purple-600">academic potential.</span>
           </h1>
-          <p className="text-lg text-slate-600 font-medium mb-8">
-            Get unrestricted access to premium notes, online tests, and advanced research materials.
+          <p className="text-lg md:text-xl text-slate-500 font-medium">
+            Get unrestricted access to premium research, the AI Assessment Engine, and priority community support.
           </p>
-
-          {status?.subscriptionPlan === "TRIAL_7_DAY" && (
-            <div className="inline-flex items-center gap-3 bg-amber-100 border border-amber-200 text-amber-800 px-6 py-3 rounded-2xl text-sm font-bold shadow-sm">
-               <Zap className="h-5 w-5 text-amber-600" />
-               You are on the restricted 7-day trial. Upgrade below for full access.
-            </div>
-          )}
         </div>
 
-        {/* Pricing Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+        {/* Pricing Cards */}
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           
-          {/* 1. Free Trial Card */}
-          <div className="bg-white rounded-3xl p-8 border-2 border-slate-200 shadow-sm flex flex-col">
+          {/* MONTHLY PLAN */}
+          <div className={`relative bg-white rounded-3xl border ${status?.subscriptionPlan === "MONTHLY" ? "border-indigo-500 shadow-[0_0_30px_rgba(79,70,229,0.15)] ring-2 ring-indigo-500 ring-offset-2" : "border-slate-200 shadow-sm hover:shadow-md transition-all"} p-8 sm:p-10 flex flex-col h-full`}>
+            {status?.subscriptionPlan === "MONTHLY" && (
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Current Plan
+              </div>
+            )}
+            
             <div className="mb-8">
-              <h3 className="text-xl font-black text-slate-900 mb-2">Free Trial</h3>
-              <p className="text-slate-500 text-sm font-medium h-10">Test the waters before committing.</p>
-              <div className="mt-6">
-                <span className="text-4xl font-black text-slate-900">KES 0</span>
+              <h3 className="text-2xl font-black text-slate-900 mb-2 flex items-center gap-2">
+                <Zap className="w-6 h-6 text-indigo-500" /> Monthly
+              </h3>
+              <p className="text-slate-500 font-medium h-10">Flexible access. Cancel anytime.</p>
+              <div className="mt-6 flex items-baseline gap-2">
+                <span className="text-5xl font-black text-slate-900">KES 100</span>
+                <span className="text-lg font-bold text-slate-400">/mo</span>
               </div>
             </div>
             
-            <ul className="space-y-4 mb-8 flex-1">
-              <li className="flex items-start gap-3 text-sm text-slate-600 font-medium">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> First 100: 3 Months VIP
-              </li>
-              <li className="flex items-start gap-3 text-sm text-slate-600 font-medium">
-                <CheckCircle2 className="h-5 w-5 text-slate-400 shrink-0" /> Others: 7-Day Access
-              </li>
-            </ul>
-
-            <button 
-              onClick={() => handleSubscribe("TRIAL")}
-              disabled={isPending || status?.isSubscribed}
-              className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl font-bold transition-colors disabled:opacity-50"
-            >
-              {loadingPlan === "TRIAL" ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Start Free Trial"}
-            </button>
-          </div>
-
-          {/* 2. Monthly Card */}
-          <div className="bg-white rounded-3xl p-8 border-2 border-slate-200 shadow-sm flex flex-col">
-            <div className="mb-8">
-              <h3 className="text-xl font-black text-slate-900 mb-2">Monthly</h3>
-              <p className="text-slate-500 text-sm font-medium h-10">Perfect for short-term revision.</p>
-              <div className="mt-6">
-                <span className="text-4xl font-black text-slate-900">KES 100</span>
-                <span className="text-slate-500 font-medium">/mo</span>
-              </div>
-            </div>
-            
-            <ul className="space-y-4 mb-8 flex-1">
-              <li className="flex items-start gap-3 text-sm text-slate-600 font-medium">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> Full Library Access
-              </li>
-              <li className="flex items-start gap-3 text-sm text-slate-600 font-medium">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> Online Test Engine
-              </li>
+            <ul className="space-y-4 mb-10 flex-1">
+              {[
+                "Full access to Assessment Engine",
+                "Unlock all Premium Research papers",
+                "AI Custom Test PDF Generator",
+                "Priority Community Q&A answers"
+              ].map((feature, idx) => (
+                <li key={idx} className="flex items-start gap-3 text-slate-600 font-medium">
+                  <CheckCircle2 className="h-5 w-5 text-indigo-500 shrink-0 mt-0.5" />
+                  <span>{feature}</span>
+                </li>
+              ))}
             </ul>
 
             <button 
               onClick={() => handleSubscribe("MONTHLY")}
-              disabled={isPending}
-              className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold transition-colors disabled:opacity-50"
+              disabled={isPending || status?.subscriptionPlan === "MONTHLY"}
+              className={`w-full py-4 rounded-xl font-black text-base transition-all flex justify-center items-center gap-2 ${
+                status?.subscriptionPlan === "MONTHLY" 
+                  ? "bg-indigo-50 text-indigo-400 cursor-not-allowed border border-indigo-100" 
+                  : "bg-slate-100 text-slate-900 hover:bg-slate-200 active:scale-95"
+              }`}
             >
-              {loadingPlan === "MONTHLY" ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Subscribe Monthly"}
+              {loadingPlan === "MONTHLY" ? (
+                <><Loader2 className="h-5 w-5 animate-spin" /> Processing...</>
+              ) : status?.subscriptionPlan === "MONTHLY" ? (
+                "Active"
+              ) : (
+                "Subscribe Monthly"
+              )}
             </button>
           </div>
 
-          {/* 3. Quarterly Card (Most Popular) */}
-          <div className="bg-blue-600 rounded-3xl p-8 border-2 border-blue-600 shadow-xl flex flex-col relative transform lg:-translate-y-4">
-            <div className="absolute top-0 inset-x-0 flex justify-center -mt-3.5">
-              <span className="bg-emerald-400 text-slate-900 text-xs font-black px-4 py-1 rounded-full uppercase tracking-wide">
-                Most Popular
-              </span>
-            </div>
+          {/* YEARLY PLAN (Highlight) */}
+          <div className={`relative bg-slate-900 rounded-3xl border ${status?.subscriptionPlan === "YEARLY" ? "border-emerald-500 shadow-[0_0_40px_rgba(16,185,129,0.2)] ring-2 ring-emerald-500 ring-offset-2 ring-offset-slate-50" : "border-slate-800 shadow-2xl"} p-8 sm:p-10 flex flex-col h-full transform md:-translate-y-4`}>
+            
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 blur-[50px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
 
-            <div className="mb-8 mt-2">
-              <h3 className="text-xl font-black text-white mb-2">Quarterly</h3>
-              <p className="text-blue-200 text-sm font-medium h-10">Ideal for an entire semester.</p>
-              <div className="mt-6 flex flex-col">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-white">KES 250</span>
-                  <span className="text-blue-200 font-medium">/3 mo</span>
-                </div>
+            {status?.subscriptionPlan === "YEARLY" ? (
+               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-emerald-500 text-white px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md z-10">
+                 <CheckCircle2 className="w-3.5 h-3.5" /> Current Plan
+               </div>
+            ) : (
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-linear-to-r from-indigo-500 to-purple-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md z-10">
+                <Star className="w-3.5 h-3.5 fill-current" /> Most Popular
+              </div>
+            )}
+            
+            <div className="mb-8 relative z-10">
+              <h3 className="text-2xl font-black text-white mb-2 flex items-center gap-2">
+                <Rocket className="w-6 h-6 text-indigo-400" /> Yearly Pro
+              </h3>
+              <p className="text-slate-400 font-medium h-10">For serious learners. Save 16% annually.</p>
+              <div className="mt-6 flex items-baseline gap-2">
+                <span className="text-5xl font-black text-white">KES 1000</span>
+                <span className="text-lg font-bold text-slate-500">/yr</span>
               </div>
             </div>
             
-            <ul className="space-y-4 mb-8 flex-1">
-              <li className="flex items-start gap-3 text-sm text-white font-medium">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" /> Everything in Monthly
+            <ul className="space-y-4 mb-10 flex-1 relative z-10">
+              <li className="flex items-start gap-3 text-slate-300 font-medium">
+                <Crown className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" /> 
+                <span className="text-white font-bold">Everything in Monthly, plus:</span>
               </li>
-              <li className="flex items-start gap-3 text-sm text-white font-medium">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" /> Priority Support
+              <li className="flex items-start gap-3 text-slate-300 font-medium">
+                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" /> 
+                <span>Best overall value for money</span>
               </li>
-            </ul>
-
-            <button 
-              onClick={() => handleSubscribe("QUARTERLY")}
-              disabled={isPending}
-              className="w-full py-4 bg-white hover:bg-slate-50 text-blue-600 rounded-xl font-black shadow-md transition-colors disabled:opacity-50"
-            >
-              {loadingPlan === "QUARTERLY" ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Subscribe Quarterly"}
-            </button>
-          </div>
-
-          {/* 4. Yearly Card */}
-          <div className="bg-white rounded-3xl p-8 border-2 border-slate-200 shadow-sm flex flex-col">
-            <div className="mb-8">
-              <h3 className="text-xl font-black text-slate-900 mb-2">Yearly</h3>
-              <p className="text-slate-500 text-sm font-medium h-10">For serious learners.</p>
-              <div className="mt-6 flex flex-col">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-slate-900">KES 1000</span>
-                  <span className="text-slate-500 font-medium">/yr</span>
-                </div>
-              </div>
-            </div>
-            
-            <ul className="space-y-4 mb-8 flex-1">
-              <li className="flex items-start gap-3 text-sm text-slate-600 font-medium">
-                <Crown className="h-5 w-5 text-emerald-500 shrink-0" /> Best Value for Money
-              </li>
-              <li className="flex items-start gap-3 text-sm text-slate-600 font-medium">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> Lock in this low price
+              <li className="flex items-start gap-3 text-slate-300 font-medium">
+                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" /> 
+                <span>Lock in this low introductory price forever</span>
               </li>
             </ul>
 
             <button 
               onClick={() => handleSubscribe("YEARLY")}
-              disabled={isPending}
-              className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold transition-colors disabled:opacity-50"
+              disabled={isPending || status?.subscriptionPlan === "YEARLY"}
+              className={`w-full py-4 rounded-xl font-black text-base transition-all flex justify-center items-center gap-2 relative z-10 ${
+                status?.subscriptionPlan === "YEARLY" 
+                  ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 cursor-not-allowed" 
+                  : "bg-indigo-600 text-white hover:bg-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] active:scale-95"
+              }`}
             >
-              {loadingPlan === "YEARLY" ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Subscribe Yearly"}
+              {loadingPlan === "YEARLY" ? (
+                <><Loader2 className="h-5 w-5 animate-spin" /> Processing...</>
+              ) : status?.subscriptionPlan === "YEARLY" ? (
+                "Active"
+              ) : (
+                "Subscribe Yearly"
+              )}
             </button>
           </div>
 
