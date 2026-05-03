@@ -12,10 +12,10 @@ export default async function UploadPage() {
     redirect("/login");
   }
 
-  // 2. Fetch User Role & Onboarding Status
+  // 2. Fetch User Role & Onboarding Status from Prisma
   const dbUser = await prisma.user.findUnique({
     where: { id: authUser.id },
-    select: { role: true, isProfileComplete: true },
+    select: { id: true, role: true, isProfileComplete: true },
   });
 
   if (!dbUser) {
@@ -50,8 +50,7 @@ export default async function UploadPage() {
           </p>
         </div>
 
-        {/* The Client Form Component */}
-        <UploadNoteForm subjects={subjects} userId={authUser.id} />
+        <UploadNoteForm subjects={subjects} userId={dbUser.id} />
         
       </div>
     </div>
