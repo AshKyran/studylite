@@ -1,8 +1,10 @@
+// app/(auth)/register/actions.ts
 "use server";
 
 import { createClient } from "@/utils/supabase/server"; 
 import prisma from "@/lib/prisma"; 
 import { redirect } from "next/navigation"; 
+import { createClient as createSupabaseAdmin } from "@supabase/supabase-js"; // UPGRADE: Import standard client for Admin actions
 
 export async function registerUser(formData: FormData) { 
   const firstName = formData.get("firstName") as string;
@@ -10,10 +12,8 @@ export async function registerUser(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   
-  // Strict Runtime Role Validation
   const rawRole = formData.get("role") as string;
   const allowedRoles = ["STUDENT", "TUTOR", "RESEARCHER"];
-  // Fallback to STUDENT if someone tries to inject an invalid/admin role
   const role = allowedRoles.includes(rawRole) ? rawRole : "STUDENT";
 
   const supabase = await createClient(); 
@@ -42,7 +42,7 @@ export async function registerUser(formData: FormData) {
     // 2. Sync the Supabase Auth User with your Prisma Public Profile 
     await prisma.user.create({
       data: {
-        id: authData.user.id, // CRITICAL: Links Prisma to Supabase
+        id: authData.user.id, 
         email: authData.user.email!,
         firstName,
         lastName,
@@ -50,11 +50,18 @@ export async function registerUser(formData: FormData) {
       },
     });
   } catch (dbError) {
-    console.error("Database sync error:", dbError); 
+    console.error("🚨 Database sync error:", dbError); 
     
-    // Rollback Strategy
-    // If the database fails, we delete the auth user so they aren't stuck in limbo.
-    await supabase.auth.admin.deleteUser(authData.user.id);
+    // UPGRADE: Secure Rollback Strategy using the Service Role Key
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (supabaseUrl && supabaseServiceKey) {
+      const supabaseAdmin = createSupabaseAdmin(supabaseUrl, supabaseServiceKey);
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+    } else {
+      console.error("🚨 FATAL: Missing SUPABASE_SERVICE_ROLE_KEY. Could not rollback user.");
+    }
     
     return { error: "Account created, but profile setup failed. Please try again." }; 
   }
@@ -63,14 +70,15 @@ export async function registerUser(formData: FormData) {
   redirect("/login?registered=true"); 
 }
 
-// ==========================================
-// ADDED THIS FUNCTION SO THE PAGE CAN FIND IT
-// ==========================================
 export async function loginWithGoogle() {
   const supabase = await createClient();
   
-  // Ensure this environment variable is set in your .env
-  const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!siteUrl) {
+    throw new Error("🚨 FATAL: NEXT_PUBLIC_SITE_URL is not set.");
+  }
+
+  const redirectUrl = `${siteUrl}/auth/callback`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",

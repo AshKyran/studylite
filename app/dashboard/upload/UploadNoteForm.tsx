@@ -1,9 +1,12 @@
+// app/dashboard/upload/UploadNoteForm.tsx
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client"; 
 import { createNoteRecord } from "@/app/dashboard/upload/actions"; 
+import { toast } from "sonner";
+import { UploadCloud, FileText, Image as ImageIcon } from "lucide-react";
 
 type Subject = {
   id: string;
@@ -12,18 +15,13 @@ type Subject = {
 
 interface UploadNoteFormProps {
   subjects: Subject[];
-  userId: string;
 }
 
-
-export default function UploadNoteForm({ subjects, userId }: UploadNoteFormProps) {
+export default function UploadNoteForm({ subjects }: UploadNoteFormProps) {
   const router = useRouter();
   const supabase = createClient();
   
   const [loading, setLoading] = useState(false);
-  const [loadingText, setLoadingText] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
   
   const [mainFile, setMainFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
@@ -42,190 +40,175 @@ export default function UploadNoteForm({ subjects, userId }: UploadNoteFormProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     
-    if (!mainFile || !thumbnailFile) {
-      setError("Please select both a cover image and the main material file.");
+    if (!mainFile) {
+      toast.error("Please select a main document file to upload.");
+      return;
+    }
+
+    if (!formData.subjectId) {
+      toast.error("Please select an academic subject.");
       return;
     }
 
     setLoading(true);
+    toast.loading("Encrypting and uploading your files...");
 
     try {
-      // 1. UPLOAD THUMBNAIL (Public Bucket)
-      setLoadingText("Uploading cover image...");
-      const thumbExt = thumbnailFile.name.split('.').pop();
-      const thumbPath = `${userId}/${Date.now()}-thumb.${thumbExt}`;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Authentication error. Please log in again.");
+
+      const timestamp = new Date().getTime();
+
+      // 1. Upload Main Document File
+      const mainFileExt = mainFile.name.split('.').pop();
+      const mainFilePath = `${user.id}/${timestamp}_main.${mainFileExt}`;
       
-      const { error: thumbErr } = await supabase.storage
-        .from('marketplace-thumbnails')
-        .upload(thumbPath, thumbnailFile);
+      const { error: mainUploadError } = await supabase.storage
+        .from('product_files')
+        .upload(mainFilePath, mainFile);
+
+      if (mainUploadError) throw new Error("Failed to upload the main document.");
+
+      // 2. Upload Thumbnail File (Optional but recommended)
+      let thumbnailPath = null;
+      if (thumbnailFile) {
+        const thumbExt = thumbnailFile.name.split('.').pop();
+        thumbnailPath = `${user.id}/${timestamp}_thumb.${thumbExt}`;
         
-      if (thumbErr) throw new Error(`Thumbnail Error: ${thumbErr.message}`);
+        const { error: thumbUploadError } = await supabase.storage
+          .from('product_thumbnails')
+          .upload(thumbnailPath, thumbnailFile);
 
-      // Get the public URL for the thumbnail so it can be displayed instantly on the marketplace
-      const { data: publicThumbData } = supabase.storage
-        .from('marketplace-thumbnails')
-        .getPublicUrl(thumbPath);
+        if (thumbUploadError) throw new Error("Failed to upload the thumbnail image.");
+      }
 
-      // 2. UPLOAD MAIN FILE (Private Bucket)
-      setLoadingText("Uploading main product file... This might take a moment.");
-      const fileExt = mainFile.name.split('.').pop();
-      const filePath = `${userId}/${Date.now()}-product.${fileExt}`;
-      
-      const { error: fileErr } = await supabase.storage
-        .from('marketplace-files')
-        .upload(filePath, mainFile);
-
-      if (fileErr) throw new Error(`File Error: ${fileErr.message}`);
-
-      // 3. SAVE TO PRISMA DATABASE
-      setLoadingText("Saving product details to marketplace...");
+      // 3. Create Database Record
       const result = await createNoteRecord({
         title: formData.title,
         description: formData.description,
-        price: Number(formData.price),
+        price: Number(formData.price) || 0,
         level: formData.level,
         subjectId: formData.subjectId,
-        authorId: userId,           
-        contentUrl: filePath,       
-        thumbnailUrl: publicThumbData.publicUrl, 
+        contentUrl: mainFilePath,
+        thumbnailUrl: thumbnailPath,
       });
 
       if (result.error) {
+        // 🚨 ROLLBACK STRATEGY: Delete the uploaded files from Supabase if DB fails
+        await supabase.storage.from('product_files').remove([mainFilePath]);
+        if (thumbnailPath) await supabase.storage.from('product_thumbnails').remove([thumbnailPath]);
         throw new Error(result.error);
       }
 
-      setSuccess(true);
-      setLoadingText("Success! Redirecting to your library...");
+      toast.dismiss();
+      toast.success("Material published successfully!", {
+        style: { background: '#dcfce7', color: '#166534', border: '1px solid #4ade80' }
+      });
       
-      setTimeout(() => {
-        router.push("/dashboard/library");
-      }, 2000);
-
-    } catch (err) {
-      // STRICT TYPESCRIPT FIX: No more 'any'. We check if it's a standard Error object.
-      console.error(err);
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An unexpected error occurred during upload.");
-      }
+      router.push("/dashboard"); 
+      
+    } catch (error: unknown) {
+      toast.dismiss();
+      toast.error((error as Error).message || "An unexpected error occurred during upload.");
     } finally {
-      if (!success) setLoading(false);
+      setLoading(false);
     }
   };
 
-  if (success) {
-    return (
-      <div className="bg-emerald-50 text-emerald-800 p-8 rounded-2xl border border-emerald-200 text-center space-y-4 shadow-sm">
-        <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
-        </div>
-        <h3 className="text-2xl font-black">Upload Complete!</h3>
-        <p className="font-medium text-emerald-700">Your material is now live on the marketplace.</p>
-        <p className="text-sm opacity-80 animate-pulse mt-4">Redirecting you to your library...</p>
-      </div>
-    );
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-8">
+    <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-8">
       
-      {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-xl text-sm font-bold border border-red-200 flex items-start gap-3">
-          <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          <p>{error}</p>
-        </div>
-      )}
-
-      {/* Form Grid */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="md:col-span-2">
+      <div className="space-y-5">
+        <div>
           <label className="block text-sm font-bold text-slate-700 mb-1.5">Material Title</label>
-          <input required type="text" name="title" value={formData.title} onChange={handleChange} 
-            placeholder="e.g. Complete Calculus II Summary Notes" 
-            className="block w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 focus:bg-white transition-colors outline-none" />
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="block text-sm font-bold text-slate-700 mb-1.5">Description</label>
-          <textarea required name="description" value={formData.description} onChange={handleChange} rows={4}
-            placeholder="What does this material cover? Why should a student buy it?" 
-            className="block w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 focus:bg-white transition-colors outline-none resize-none"></textarea>
+          <input required type="text" name="title" value={formData.title} onChange={handleChange} disabled={loading}
+            placeholder="e.g. Complete Organic Chemistry Summary"
+            className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all disabled:opacity-60" />
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-1.5">Price (KES)</label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <span className="text-slate-500 font-bold sm:text-sm">KSh</span>
-            </div>
-            <input required type="number" min="0" step="50" name="price" value={formData.price} onChange={handleChange} 
-              placeholder="0.00" 
-              className="block w-full rounded-xl border border-slate-200 pl-14 pr-4 py-3 text-slate-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 focus:bg-white transition-colors outline-none" />
+          <label className="block text-sm font-bold text-slate-700 mb-1.5">Detailed Description</label>
+          <textarea required name="description" value={formData.description} onChange={handleChange} disabled={loading} rows={4}
+            placeholder="What does this document cover? Why is it valuable?"
+            className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all disabled:opacity-60" />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1.5">Price (KES)</label>
+            <input required type="number" name="price" value={formData.price} onChange={handleChange} disabled={loading} min="0" step="1"
+              placeholder="e.g. 500"
+              className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all disabled:opacity-60" />
           </div>
-          <p className="text-xs text-slate-500 mt-1.5 font-medium">Set to 0 for free materials.</p>
-        </div>
 
-        <div>
-          <label className="block text-sm font-bold text-slate-700 mb-1.5">Subject Category</label>
-          <select required name="subjectId" value={formData.subjectId} onChange={handleChange} 
-            className="block w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 focus:bg-white transition-colors outline-none cursor-pointer">
-            {subjects.map(sub => (
-              <option key={sub.id} value={sub.id}>{sub.name}</option>
-            ))}
-          </select>
-        </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1.5">Academic Level</label>
+            <select name="level" value={formData.level} onChange={handleChange} disabled={loading}
+              className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all disabled:opacity-60 appearance-none">
+              <option value="HIGH_SCHOOL">High School</option>
+              <option value="COLLEGE">College / University</option>
+              <option value="GENERAL">General</option>
+            </select>
+          </div>
 
-        <div>
-          <label className="block text-sm font-bold text-slate-700 mb-1.5">Academic Level</label>
-          <select required name="level" value={formData.level} onChange={handleChange} 
-            className="block w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 focus:bg-white transition-colors outline-none cursor-pointer">
-            <option value="HIGH_SCHOOL">High School</option>
-            <option value="COLLEGE">College / University</option>
-            <option value="GENERAL">General Academic</option>
-          </select>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1.5">Subject Category</label>
+            <select name="subjectId" value={formData.subjectId} onChange={handleChange} disabled={loading}
+              className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all disabled:opacity-60 appearance-none">
+              {subjects.map(sub => (
+                <option key={sub.id} value={sub.id}>{sub.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      <div className="border-t border-slate-200 pt-8 space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
         
-        {/* Cover Image Upload */}
-        <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 border-dashed">
-          <label className="block text-sm font-bold text-slate-900 mb-1">Cover Image (Public)</label>
-          <p className="text-xs text-slate-500 mb-4 font-medium">This is what buyers see on the marketplace (JPG, PNG).</p>
-          <input required type="file" accept="image/*" onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)}
-            className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer transition-colors" />
+        {/* Main Document Upload */}
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-4 text-emerald-700">
+            <FileText className="w-6 h-6" />
+            <h3 className="font-bold">Main Document</h3>
+          </div>
+          <p className="text-sm text-emerald-600 mb-4">The secure file buyers will receive after payment (.pdf, .zip, .docx).</p>
+          <input required type="file" accept=".pdf,.doc,.docx,.zip,.mp4" onChange={(e) => setMainFile(e.target.files?.[0] || null)} disabled={loading}
+            className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer transition-colors disabled:opacity-60" />
         </div>
 
-        {/* Main File Upload */}
-        <div className="bg-emerald-50/50 p-6 rounded-xl border border-emerald-200 border-dashed">
-          <label className="block text-sm font-bold text-emerald-900 mb-1">Main Material File (Private & Secure)</label>
-          <p className="text-xs text-emerald-600 mb-4 font-medium">Buyers will only get access to this file AFTER successful payment (ZIP, PDF, DOCX).</p>
-          <input required type="file" accept=".pdf,.doc,.docx,.zip,.mp4" onChange={(e) => setMainFile(e.target.files?.[0] || null)}
-            className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-emerald-100 file:text-emerald-700 hover:file:bg-emerald-200 cursor-pointer transition-colors" />
+        {/* Thumbnail Upload */}
+        <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-4 text-indigo-700">
+            <ImageIcon className="w-6 h-6" />
+            <h3 className="font-bold">Cover Image (Optional)</h3>
+          </div>
+          <p className="text-sm text-indigo-600 mb-4">An eye-catching thumbnail to display on the marketplace (.jpg, .png).</p>
+          <input type="file" accept="image/*" onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)} disabled={loading}
+            className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer transition-colors disabled:opacity-60" />
         </div>
 
       </div>
 
       <div className="pt-4">
         <button type="submit" disabled={loading}
-          className="w-full flex justify-center items-center py-4 px-4 rounded-xl shadow-sm text-sm font-black text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400 disabled:scale-100 transition-all">
+          className="w-full flex justify-center items-center py-4 px-4 rounded-xl shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] text-lg font-black text-white bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all gap-3">
           {loading ? (
-            <span className="flex items-center gap-3">
-              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+            <>
+              <svg className="animate-spin h-6 w-6 text-white" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              {loadingText}
-            </span>
+              Publishing...
+            </>
           ) : (
-            "Publish to Marketplace"
+            <>
+              <UploadCloud className="w-6 h-6" />
+              Publish Material to Marketplace
+            </>
           )}
         </button>
       </div>
-
     </form>
   );
 }

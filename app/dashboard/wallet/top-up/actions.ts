@@ -1,3 +1,4 @@
+// app/dashboard/wallet/top-up/actions.ts
 "use server";
 
 import prisma from "@/lib/prisma";
@@ -5,26 +6,20 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 
 export async function verifyAndFundWallet(reference: string, userId: string) {
-  if (!reference ) {
-
+  if (!reference) {
     throw new Error("Missing transaction reference.");
   }
 
-  if (!userId) {
-    throw new Error("Missing user ID.");
-  }
-  
-
-  // SECURITY FIX 1: Never trust the client for the userId. Fetch it securely here.
+  // SECURITY FIX: Never trust the client for the userId. Fetch it securely here.
   const supabase = await createClient();
   const { data: { user: authUser } } = await supabase.auth.getUser();
 
-  if (!authUser) {
+  if (!authUser || authUser.id !== userId) {
     throw new Error("Unauthorized. You must be logged in to fund a wallet.");
   }
 
   try {
-  
+    // Prevent double-spend replay attacks
     const existingTx = await prisma.transaction.findUnique({ where: { reference } });
     if (existingTx) {
       throw new Error("This payment has already been processed.");
@@ -37,7 +32,7 @@ export async function verifyAndFundWallet(reference: string, userId: string) {
         Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
         "Content-Type": "application/json",
       },
-      cache: "no-store" 
+      cache: "no-store", 
     });
     
     const paystackData = await verifyRes.json();
@@ -48,38 +43,40 @@ export async function verifyAndFundWallet(reference: string, userId: string) {
       throw new Error("Payment verification failed. The transaction was not successful.");
     }
 
+    // Paystack amounts are in Kobo/Cents
     const topUpAmountKES = paystackData.data.amount / 100;
 
     // 3. Add funds securely via a Prisma Transaction
     await prisma.$transaction(async (tx) => {
+      // Upsert ensures that if a student doesn't have a wallet yet, one is created automatically
       await tx.wallet.upsert({
         where: { userId: authUser.id },
         update: { balance: { increment: topUpAmountKES } },
         create: { userId: authUser.id, balance: topUpAmountKES }
       });
       
-      // UNCOMMENTED AND READY:
+      // Create the immutable audit log
       await tx.transaction.create({
         data: {
           userId: authUser.id,
           amount: topUpAmountKES,
-          reference: reference, // <--- Paystack reference prevents reuse
+          reference: reference, 
           type: "TOP_UP",
           description: "Wallet Top-up via Paystack"
         }
       });
     });
 
-    // 4. Refresh the application
+    // 4. Refresh the application state
     revalidatePath("/dashboard/wallet");
     revalidatePath("/dashboard");
-    revalidatePath("/tutors");
+    revalidatePath("/explore"); // Refresh marketplace so they can buy immediately
 
     return { success: true, amount: topUpAmountKES };
     
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Failed to finalize top-up.";
-    console.error("Wallet Funding Error:", error);
-    throw new Error(errorMessage);
+    console.error("Top-Up Error:", errorMessage);
+    return { success: false, error: errorMessage };
   }
 }

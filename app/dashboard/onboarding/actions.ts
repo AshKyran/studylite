@@ -14,10 +14,14 @@ export async function completeCreatorOnboarding(data: {
   const supabase = await createClient();
   const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
 
-  if (authError || !authUser) return { error: "Unauthorized" };
+  if (authError || !authUser) return { error: "Unauthorized. Please log in." };
+
+  if (!process.env.PAYSTACK_SECRET_KEY) {
+    console.error("Missing PAYSTACK_SECRET_KEY");
+    return { error: "Payment gateway configuration error. Please contact support." };
+  }
 
   try {
-    // 1. Fetch user to get their name for the Paystack Business Name
     const dbUser = await prisma.user.findUnique({
       where: { id: authUser.id },
       select: { firstName: true, lastName: true, isProfileComplete: true }
@@ -27,7 +31,6 @@ export async function completeCreatorOnboarding(data: {
     if (dbUser.isProfileComplete) return { error: "Profile is already locked and complete." };
 
     // 2. Call Paystack to create the Subaccount
-    // We set percentage_charge to 2.5 (Your platform cut)
     const paystackRes = await fetch("https://api.paystack.co/subaccount", {
       method: "POST",
       headers: {
@@ -61,7 +64,7 @@ export async function completeCreatorOnboarding(data: {
         address: data.address,
         currency: data.currency,
         paystackSubaccountCode: subaccountCode,
-        isProfileComplete: true, // Loks the profile!
+        isProfileComplete: true, // Locks the profile!
       },
     });
 
@@ -69,6 +72,6 @@ export async function completeCreatorOnboarding(data: {
 
   } catch (error) {
     console.error("Onboarding Error:", error);
-    return { error: "A server error occurred while processing your application." };
+    return { error: "An unexpected error occurred during profile setup." };
   }
 }

@@ -1,30 +1,11 @@
 // app/auth/callback/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+// UPGRADE: Import your centralized Prisma client to prevent connection leaks
+import prisma from "@/lib/prisma"; 
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const globalForPrisma = globalThis as unknown as {
-  prisma?: PrismaClient;
-};
-
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
-
-const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter,
-    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-  });
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -32,6 +13,7 @@ export async function GET(request: Request) {
   const next = searchParams.get("next") ?? "/dashboard";
 
   if (code) {
+    // createClient() now strictly checks for missing env variables based on our previous upgrades
     const supabase = await createClient();
 
     const { data: authData, error: authError } =
@@ -41,6 +23,7 @@ export async function GET(request: Request) {
       const user = authData.user;
 
       try {
+        // Sync the Supabase user to our Prisma database
         const existingUser = await prisma.user.findUnique({
           where: { id: user.id },
         });
@@ -55,10 +38,11 @@ export async function GET(request: Request) {
           const lastName =
             user.user_metadata?.last_name || nameParts.slice(1).join(" ") || "";
 
+          // The exclamation mark here is safe because Google OAuth guarantees an email
           await prisma.user.create({
             data: {
               id: user.id,
-              email: user.email!,
+              email: user.email!, 
               firstName,
               lastName,
               role: "STUDENT",
@@ -67,16 +51,21 @@ export async function GET(request: Request) {
           });
         }
 
+        // Successfully authenticated and synced; redirect to the intended destination
         return NextResponse.redirect(new URL(next, origin));
+        
       } catch (dbError) {
-        console.error("Database sync error during OAuth:", dbError);
+        console.error("🚨 Database sync error during OAuth:", dbError);
         return NextResponse.redirect(
           new URL("/login?error=Failed%20to%20sync%20user%20profile.", origin)
         );
       }
+    } else if (authError) {
+        console.error("🚨 Supabase OAuth exchange error:", authError);
     }
   }
 
+  // Fallback for missing code or failed authentication
   return NextResponse.redirect(
     new URL("/login?error=Authentication%20failed.%20Please%20try%20again.", origin)
   );

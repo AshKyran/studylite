@@ -56,7 +56,7 @@ export default async function UploadProjectPage() {
 
         {/* The Interactive Form Component */}
         <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
-          <UploadProjectForm subjects={subjects} userId={authUser.id} />
+          <UploadProjectForm subjects={subjects} />
         </div>
 
       </div>

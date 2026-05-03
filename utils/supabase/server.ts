@@ -1,13 +1,20 @@
+// utils/supabase/server.ts
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function createClient() {
-  // In Next.js 15+, cookies() is an asynchronous operation
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("🚨 FATAL: Supabase environment variables are missing on the server.");
+  }
+
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -19,9 +26,8 @@ export async function createClient() {
               cookieStore.set(name, value, options);
             });
           } catch (error) {
-            // The `setAll` method was called from a Server Component.
-            // This error can be safely ignored because Server Components 
-            // cannot set cookies. We handle cookie refreshing in Middleware.
+            // Server Components cannot mutate cookies. 
+            // This is expected and handled safely.
             console.warn("Skipped setting cookies from a Server Component.");
           }
         },

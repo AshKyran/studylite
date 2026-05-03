@@ -1,3 +1,4 @@
+// app/(auth)/login/actions.ts
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
@@ -6,6 +7,11 @@ import { redirect } from "next/navigation";
 export async function loginUser(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+
+  // STRICT: Prevent unnecessary DB calls if fields are somehow empty
+  if (!email || !password) {
+    return { error: "Email and password are required." };
+  }
 
   const supabase = await createClient();
 
@@ -18,15 +24,18 @@ export async function loginUser(formData: FormData) {
     return { error: error.message };
   }
 
-  // Redirect to dashboard on success
   redirect("/dashboard");
 }
 
 export async function loginWithGoogle() {
   const supabase = await createClient();
   
-  // Ensure this environment variable is set in your .env
-  const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!siteUrl) {
+    throw new Error("🚨 FATAL: NEXT_PUBLIC_SITE_URL is not set.");
+  }
+
+  const redirectUrl = `${siteUrl}/auth/callback`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",

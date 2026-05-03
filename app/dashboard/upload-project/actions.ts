@@ -1,18 +1,16 @@
+// app/dashboard/upload-project/actions.ts
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { PrismaClient, EducationLevel } from "@prisma/client";
+import prisma from "@/lib/prisma"; // UPGRADE: Secure centralized connection pool
 import { revalidatePath } from "next/cache";
 
-const prisma = new PrismaClient();
-
-// 1. Strict TypeScript interface for the incoming data payload
 interface CreateProjectPayload {
   title: string;
   description: string;
   price: number;
   subjectId: string;
-  level: string; 
+  level: "HIGH_SCHOOL" | "COLLEGE" | "GENERAL"; 
   demoUrl?: string;
   techStack: string[];
   documentUrl: string | null;
@@ -20,18 +18,25 @@ interface CreateProjectPayload {
 }
 
 export async function createProjectAction(data: CreateProjectPayload) {
+  // 1. Secure Authentication
   const supabase = await createClient();
-  const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-  if (authError || !authUser) {
-    throw new Error("Unauthorized: You must be logged in to upload projects.");
+  if (authError || !user) {
+    return { error: "Unauthorized: You must be logged in to upload projects." };
   }
 
-  // 2. Validate Education Level to satisfy Prisma's Enum requirements safely
-  const validLevels = ["HIGH_SCHOOL", "COLLEGE", "GENERAL"];
-  if (!validLevels.includes(data.level)) {
-    throw new Error("Invalid education level provided.");
+  // 2. Strict Authorization Guard
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { role: true, isProfileComplete: true }
+  });
+
+  if (!dbUser || dbUser.role === "STUDENT" || !dbUser.isProfileComplete) {
+    return { error: "Forbidden. Only verified creators can publish projects." };
   }
+
+  if (data.price < 0) return { error: "Price cannot be a negative value." };
 
   try {
     // 3. Write securely to the database
@@ -41,26 +46,24 @@ export async function createProjectAction(data: CreateProjectPayload) {
         description: data.description,
         price: data.price,
         subjectId: data.subjectId,
-        level: data.level as EducationLevel, // Safe cast after validation
+        level: data.level, 
         demoUrl: data.demoUrl || null,
         techStack: data.techStack,
         documentUrl: data.documentUrl,
         sourceCodeUrl: data.sourceCodeUrl,
-        authorId: authUser.id,
-        isPublished: true, // Instantly available on the storefront
+        authorId: user.id, // Strictly bound to the verified server session
+        isPublished: true, 
       },
     });
 
-    // 4. Bust the Next.js cache so the new project appears immediately
-    revalidatePath("/explore/projects");
+    // 4. Bust cache so it appears on storefront
+    revalidatePath("/explore");
     revalidatePath("/dashboard");
 
     return { success: true, projectId: project.id };
     
   } catch (error) {
-    // Strict error handling
     console.error("Database Error:", error);
-    const message = error instanceof Error ? error.message : "Failed to create project record";
-    throw new Error(message);
+    return { error: "Failed to create project record in the database." };
   }
 }

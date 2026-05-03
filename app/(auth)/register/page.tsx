@@ -1,17 +1,16 @@
+// app/(auth)/register/page.tsx
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import Link from "next/link";
+import { toast } from "sonner"; 
 import { registerUser, loginWithGoogle } from "./actions"; 
 
 export default function RegisterPage() {
-  const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  // Handle manual form submission via Server Actions
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
     
     const formData = new FormData(e.currentTarget);
 
@@ -19,26 +18,30 @@ export default function RegisterPage() {
       const result = await registerUser(formData);
       
       if (result?.error) {
-        setError(result.error);
+        // UPGRADE: Using Sonner for error notifications
+        toast.error(result.error, {
+          style: { background: '#fee2e2', color: '#991b1b', border: '1px solid #f87171' }
+        });
+      } else {
+        // Note: The action redirects on success, but just in case it takes a second:
+        toast.success("Account created! Redirecting to login...", {
+          style: { background: '#dcfce7', color: '#166534', border: '1px solid #4ade80' }
+        });
       }
     });
   };
 
-  // Handle Google OAuth submit
   const onGoogleLogin = () => {
-    setError("");
     startTransition(async () => {
       const result = await loginWithGoogle();
       if (result?.error) {
-        setError(result.error);
+        toast.error(result.error);
       }
     });
   };
 
   return (
     <div className="w-full">
-      
-      {/* Header Area */}
       <div>
         <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
           Create your account
@@ -50,76 +53,72 @@ export default function RegisterPage() {
           </Link>
         </p>
       </div>
-      
-      {/* Alert Messages */}
-      {error && (
-        <div className="mt-6 bg-red-50 text-red-700 p-4 rounded-xl text-sm font-bold border border-red-200">
-          {error}
-        </div>
-      )}
 
       <form className="mt-8 space-y-5" onSubmit={onSubmit}>
-        
-        {/* Name Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
-            <label htmlFor="firstName" className="block text-sm font-bold text-slate-700 mb-1.5">First Name</label>
+            <label htmlFor="firstName" className="mb-1.5 block text-sm font-bold text-slate-700">First Name</label>
             <input
               id="firstName"
               name="firstName"
               type="text"
               required
-              className="block w-full rounded-xl border border-slate-200 px-4 py-3.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm bg-slate-50 focus:bg-white transition-colors outline-none"
+              disabled={isPending}
               placeholder="John"
+              className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 placeholder-slate-400 transition-colors focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm disabled:opacity-60 disabled:bg-slate-100"
             />
           </div>
+
           <div>
-            <label htmlFor="lastName" className="block text-sm font-bold text-slate-700 mb-1.5">Last Name</label>
+            <label htmlFor="lastName" className="mb-1.5 block text-sm font-bold text-slate-700">Last Name</label>
             <input
               id="lastName"
               name="lastName"
               type="text"
               required
-              className="block w-full rounded-xl border border-slate-200 px-4 py-3.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm bg-slate-50 focus:bg-white transition-colors outline-none"
+              disabled={isPending}
               placeholder="Doe"
+              className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 placeholder-slate-400 transition-colors focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm disabled:opacity-60 disabled:bg-slate-100"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-bold text-slate-700 mb-1.5">Email address</label>
+          <label htmlFor="email" className="mb-1.5 block text-sm font-bold text-slate-700">Email address</label>
           <input
             id="email"
             name="email"
             type="email"
             autoComplete="email"
             required
-            className="block w-full rounded-xl border border-slate-200 px-4 py-3.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm bg-slate-50 focus:bg-white transition-colors outline-none"
+            disabled={isPending}
             placeholder="you@example.com"
+            className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 placeholder-slate-400 transition-colors focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm disabled:opacity-60 disabled:bg-slate-100"
           />
         </div>
-        
+
         <div>
-          <label htmlFor="password" className="block text-sm font-bold text-slate-700 mb-1.5">Password</label>
+          <label htmlFor="password" className="mb-1.5 block text-sm font-bold text-slate-700">Password</label>
           <input
             id="password"
             name="password"
             type="password"
             autoComplete="new-password"
             required
-            className="block w-full rounded-xl border border-slate-200 px-4 py-3.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm bg-slate-50 focus:bg-white transition-colors outline-none"
-            placeholder="Minimum 8 characters"
-            minLength={8}
+            disabled={isPending}
+            placeholder="••••••••"
+            className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 placeholder-slate-400 transition-colors focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm disabled:opacity-60 disabled:bg-slate-100"
           />
         </div>
 
         <div>
-          <label htmlFor="role" className="block text-sm font-bold text-slate-700 mb-1.5">I am registering as a...</label>
+          <label htmlFor="role" className="mb-1.5 block text-sm font-bold text-slate-700">I am joining as a...</label>
           <select
             id="role"
             name="role"
-            defaultValue="STUDENT"
-            className="block w-full rounded-xl border border-slate-200 px-4 py-3.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm bg-slate-50 focus:bg-white transition-colors outline-none cursor-pointer"
+            required
+            disabled={isPending}
+            className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 transition-colors focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm disabled:opacity-60 disabled:bg-slate-100 appearance-none"
           >
             <option value="STUDENT">Student</option>
             <option value="TUTOR">Tutor / Teacher</option>
@@ -136,7 +135,6 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      {/* OAuth Divider */}
       <div className="relative mt-8">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-slate-200"></div>
@@ -146,16 +144,20 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Google Button */}
       <button
         type="button"
         onClick={onGoogleLogin}
-        className="mt-6 w-full flex items-center justify-center gap-3 px-4 py-3.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm active:scale-[0.98]"
+        disabled={isPending}
+        className="mt-6 w-full flex items-center justify-center gap-3 px-4 py-3.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-        Sign up with Google
+        <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+        </svg>
+        {isPending ? "Connecting..." : "Continue with Google"}
       </button>
-
     </div>
   );
 }

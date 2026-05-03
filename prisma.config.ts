@@ -2,6 +2,11 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+// STRICT MODE: Fail fast if the environment variable is missing
+if (!process.env.DATABASE_URL) {
+  throw new Error("🚨 FATAL: DATABASE_URL environment variable is missing.");
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
@@ -9,6 +14,6 @@ export default defineConfig({
     seed: 'npx tsx prisma/seed.ts', 
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: process.env.DATABASE_URL,
   },
 });

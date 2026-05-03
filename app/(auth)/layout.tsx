@@ -19,9 +19,7 @@ export default function AuthLayout({
               <div className="bg-blue-600 p-2.5 rounded-xl group-hover:bg-blue-700 transition-colors">
                 <BookOpen className="h-6 w-6 text-white" />
               </div>
-              <span className="text-2xl font-black text-slate-900 tracking-tight">
-                StudyLite.
-              </span>
+              <span className="text-2xl font-black text-slate-900 tracking-tight">Studylite.</span>
             </Link>
           </div>
 
