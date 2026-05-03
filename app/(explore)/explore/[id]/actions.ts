@@ -18,9 +18,9 @@ export async function initializeCheckout(formData: FormData) {
   }
 
   // Fetch the user's email from our DB (required by Paystack)
-  const dbUser = await prisma.user.findUnique({
+  const dbUser: { email: string | null } | null = await prisma.user.findUnique({
     where: { id: authUser.id },
-    select: { email: true }
+    select: { email: true },
   });
 
   if (!dbUser) redirect("/login");

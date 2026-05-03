@@ -55,7 +55,7 @@ export default async function ProjectsHubPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project) => (
-              <Link href={`/explore/projects/${project.id}`} key={project.id} className="group">
+              <Link href={`/projects/${project.id}`} key={project.id} className="group">
                 <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col">
                   
                   {/* Card Header (Subject & Demo Link) */}

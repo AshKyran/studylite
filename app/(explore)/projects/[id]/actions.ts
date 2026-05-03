@@ -53,7 +53,7 @@ export async function initializeProjectCheckout(projectId: string) {
   const payload: PaystackPayload = {
     email: authUser.email,
     amount: amountInCents,
-    callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/explore/projects/${project.id}`, 
+    callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/projects/${project.id}`, 
     metadata: {
       platform: "studylite",       
       userId: authUser.id,
