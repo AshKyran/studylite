@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { MessageSquarePlus, Flame, Hash, Info, Trophy, ShieldAlert } from "lucide-react";
+import { MessageSquarePlus, Flame, Hash, Info, Trophy } from "lucide-react";
+
+// Define mock data outside the component to ensure render purity
+const trendingTopics = [
+  { name: 'Computer Science', count: 42 },
+  { name: 'Calculus II', count: 31 },
+  { name: 'Macroeconomics', count: 58 },
+  { name: 'Organic Chemistry', count: 24 },
+  { name: 'Data Structures', count: 47 }
+];
 
 export default function CommunityLayout({
   children,
@@ -17,7 +26,7 @@ export default function CommunityLayout({
         {/* Mobile "Ask" Button (Hidden on Desktop) */}
         <div className="mt-6 lg:hidden">
           <Link 
-            href="/explore/forum/ask" 
+            href="/community/ask" 
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-blue-700 active:scale-[0.98]"
           >
             <MessageSquarePlus className="h-5 w-5" />
@@ -34,23 +43,23 @@ export default function CommunityLayout({
         <main className="flex-1 min-w-0">
           {/* Forum Navigation Tabs */}
           <div className="bg-white border border-slate-200 rounded-2xl p-1.5 mb-6 flex items-center overflow-x-auto hide-scrollbar shadow-sm">
-            <Link href="/explore/forum" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 text-slate-900 font-bold text-sm shrink-0">
+            <Link href="/community" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 text-slate-900 font-bold text-sm shrink-0">
               <Flame className="h-4 w-4 text-orange-500" />
               Popular
             </Link>
-            <Link href="/explore/forum/new" className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 font-bold text-sm transition-colors shrink-0">
+            <Link href="/community/new" className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 font-bold text-sm transition-colors shrink-0">
               Newest
             </Link>
-            <Link href="/explore/forum/unanswered" className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 font-bold text-sm transition-colors shrink-0">
+            <Link href="/community/unanswered" className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 font-bold text-sm transition-colors shrink-0">
               Unanswered
             </Link>
-            <Link href="/explore/forum/my-posts" className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 font-bold text-sm transition-colors shrink-0">
+            <Link href="/community/my-posts" className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 font-bold text-sm transition-colors shrink-0">
               My Posts
             </Link>
           </div>
 
           {/* This is where your actual thread feed or post pages will render */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm min-h-[500px]">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm min-h-125">
             {children}
           </div>
         </main>
@@ -62,7 +71,7 @@ export default function CommunityLayout({
           
           {/* Primary Action */}
           <Link 
-            href="/explore/forum/ask" 
+            href="/community/ask" 
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-4 text-sm font-bold text-white shadow-sm transition-all hover:bg-blue-700 active:scale-[0.98]"
           >
             <MessageSquarePlus className="h-5 w-5" />
@@ -76,7 +85,7 @@ export default function CommunityLayout({
               <h3>About this Community</h3>
             </div>
             <p className="text-sm text-slate-600 leading-relaxed font-medium mb-4">
-              StudyLite's Q&A Hub is a collaborative space for students and tutors. Earn reputation points by providing helpful, verified answers.
+              StudyLite&apos;s Q&A Hub is a collaborative space for students and tutors. Earn reputation points by providing helpful, verified answers.
             </p>
             <div className="flex items-center gap-4 text-sm border-t border-slate-100 pt-4 mt-2">
               <div className="flex flex-col">
@@ -100,13 +109,13 @@ export default function CommunityLayout({
               <h3>Trending Topics</h3>
             </div>
             <div className="space-y-3">
-              {['Computer Science', 'Calculus II', 'Macroeconomics', 'Organic Chemistry', 'Data Structures'].map((topic, i) => (
-                <Link key={i} href={`/explore/forum/tag/${topic.toLowerCase().replace(' ', '-')}`} className="flex items-center justify-between group">
+              {trendingTopics.map((topic, i) => (
+                <Link key={i} href={`/explore/forum/tag/${topic.name.toLowerCase().replace(' ', '-')}`} className="flex items-center justify-between group">
                   <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600 transition-colors">
-                    {topic}
+                    {topic.name}
                   </span>
                   <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
-                    +{Math.floor(Math.random() * 50) + 10}
+                    +{topic.count}
                   </span>
                 </Link>
               ))}

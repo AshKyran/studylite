@@ -85,10 +85,16 @@ export default async function LibraryPage() {
                 key={note.id} 
                 className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow duration-300"
               >
-                {/* Note: Since we added thumbnailUrl to the DB, you could eventually display it here 
-                  using a public Supabase URL: 
-                  https://[YOUR_SUPABASE_ID].supabase.co/storage/v1/object/public/product_thumbnails/[note.thumbnailUrl]
-                */}
+                {/* Display the Thumbnail */}
+                {note.thumbnailUrl && (
+                  <div className="w-full h-48 bg-slate-100 relative overflow-hidden border-b border-slate-100">
+                    <img 
+                      src={`https://gvtqwyvxtliklpooxrgk.supabase.co/storage/v1/object/public/product_thumbnails/${note.thumbnailUrl}`} 
+                      alt={note.title}
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                  </div>
+                )}
                 
                 <div className="p-6 flex-1">
                   <div className="flex items-center gap-2 mb-3">

@@ -77,7 +77,7 @@ export default async function TutorsLayout({
             </Link>
             
             <Link 
-              href="/tutors/requests" 
+              href="/tutors/[id]/request" 
               className="flex items-center gap-2 py-4 text-sm font-bold text-slate-400 hover:text-white transition-colors border-b-2 border-transparent hover:border-slate-700 whitespace-nowrap"
             >
               <Briefcase className="h-4 w-4" />
